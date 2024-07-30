@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="generator" content="quarto-1.5.55">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+    <title>Smogseer training at 100 epochs</title>
+    <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      div.columns{display: flex; gap: min(4vw, 1.5em);}
+      div.column{flex: auto; overflow-x: auto;}
+      div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+      ul.task-list{list-style: none;}
+      ul.task-list li input[type="checkbox"] {
+        width: 0.8em;
+        margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+        vertical-align: middle;
+      }
+      /* CSS for syntax highlighting */
+      pre > code.sourceCode { white-space: pre; position: relative; }
+      pre > code.sourceCode > span { line-height: 1.25; }
+      pre > code.sourceCode > span:empty { height: 1.2em; }
+      .sourceCode { overflow: visible; }
+      code.sourceCode > span { color: inherit; text-decoration: inherit; }
+      div.sourceCode { margin: 1em 0; }
+      pre.sourceCode { margin: 0; }
+      @media screen {
+      div.sourceCode { overflow: auto; }
+      }
+      @media print {
+      pre > code.sourceCode { white-space: pre-wrap; }
+      pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+      }
+      pre.numberSource code
+        { counter-reset: source-line 0; }
+      pre.numberSource code > span
+        { position: relative; left: -4em; counter-increment: source-line; }
+      pre.numberSource code > span > a:first-child::before
+        { content: counter(source-line);
+          position: relative; left: -1em; text-align: right; vertical-align: baseline;
+          border: none; display: inline-block;
+          -webkit-touch-callout: none; -webkit-user-select: none;
+          -khtml-user-select: none; -moz-user-select: none;
+          -ms-user-select: none; user-select: none;
+          padding: 0 4px; width: 4em;
+        }
+      pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+      div.sourceCode
+        {   }
+      @media screen {
+      pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+      }
+    </style>
+
+    <style>
+      body.hypothesis-enabled #quarto-embed-header {
+        padding-right: 36px;
+      }
+
+      #quarto-embed-header {
+        height: 3em;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: solid 1px;
+      }
+
+      #quarto-embed-header h6 {
+        font-size: 1.1em;
+        padding-top: 0.6em;
+        margin-left: 1em;
+        margin-right: 1em;
+        font-weight: 400;
+      }
+
+      #quarto-embed-header a.quarto-back-link,
+      #quarto-embed-header a.quarto-download-embed {
+        font-size: 0.8em;
+        margin-top: 1em;
+        margin-bottom: 1em;
+        margin-left: 1em;
+        margin-right: 1em;
+      }
+
+      .quarto-back-container {
+        padding-left: 0.5em;
+        display: flex;
+      }
+
+      .headroom {
+          will-change: transform;
+          transition: transform 200ms linear;
+      }
+
+      .headroom--pinned {
+          transform: translateY(0%);
+      }
+
+      .headroom--unpinned {
+          transform: translateY(-100%);
+      }      
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script>
+    window.document.addEventListener("DOMContentLoaded", function () {
+
+      var header = window.document.querySelector("#quarto-embed-header");
+      const titleBannerEl = window.document.querySelector("body > #title-block-header");
+      if (titleBannerEl) {
+        titleBannerEl.style.paddingTop = header.clientHeight + "px";
+      }
+      const contentEl = window.document.getElementById('quarto-content');
+      for (const child of contentEl.children) {
+        child.style.paddingTop = header.clientHeight + "px";
+        child.style.marginTop = "1em";
+      }
+
+      // Use the article root if the `back` call doesn't work. This isn't perfect
+      // but should typically work
+      window.quartoBackToArticle = () => {
+        var currentUrl = window.location.href;
+        window.history.back();
+        setTimeout(() => {
+            // if location was not changed in 100 ms, then there is no history back
+            if(currentUrl === window.location.href){              
+                // redirect to site root
+                window.location.href = "../index.html";
+            }
+        }, 100);
+      }
+
+      const headroom = new window.Headroom(header, {
+        tolerance: 5,
+        onPin: function () {
+        },
+        onUnpin: function () {
+        },
+      });
+      headroom.init();
+    });
+    </script>
+
+    
+<script src="../site_libs/manuscript-notebook/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+     <script async="" src="https://hypothes.is/embed.js"></script>
+<script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script>  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>  
+      </head>
+
+  <body class="quarto-notebook">
+    <div id="quarto-embed-header" class="headroom fixed-top bg-primary">
+      
+      <a onclick="window.quartoBackToArticle(); return false;" class="btn btn-primary quarto-back-link" href=""><i class="bi bi-caret-left"></i> Back to Article</a>
+      <h6><i class="bi bi-journal-code"></i> smogseer100.ipynb</h6>
+
+            <a href="../notebooks/smogseer100.ipynb" class="btn btn-primary quarto-download-embed" download="smogseer100.ipynb">Download Notebook</a>
+          </div>
+
+     <header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Smogseer training at 100 epochs</h1>
+          </div>
+
+    
+    <div class="quarto-title-meta-container">
+      <div class="quarto-title-meta-column-start">
+        
+        <div class="quarto-title-meta">
+
+                
+          
+                
+              </div>
+      </div>
+      <div class="quarto-title-meta-column-end quarto-other-formats-target">
+      </div>
+    </div>
+
+
+
+    <div class="quarto-other-links-text-target">
+    </div>  </div>
+</header><div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+</div>
+<main class="content quarto-banner-title-block" id="quarto-document-content">      
+
+     <div id="cell-1" class="cell markdown">
+
+</div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [1]:</pre></div><div id="cell-2" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> xarray <span class="im">as</span> xr</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tensorflow <span class="im">import</span> keras</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tensorflow.keras <span class="im">import</span> layers</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler, MinMaxScaler</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.impute <span class="im">import</span> SimpleImputer</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tensorflow.keras.models <span class="im">import</span> load_model</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tensorflow.keras.utils <span class="im">import</span> Sequence</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [2]:</pre></div><div id="cell-3" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load your dataset</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> xr.open_dataset(<span class="st">'S5PL2_5D.nc'</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>ds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="2">
+<div><svg style="position: absolute; width: 0; height: 0; overflow: hidden">
+<defs>
+<symbol id="icon-database" viewbox="0 0 32 32">
+<path d="M16 0c-8.837 0-16 2.239-16 5v4c0 2.761 7.163 5 16 5s16-2.239 16-5v-4c0-2.761-7.163-5-16-5z"></path>
+<path d="M16 17c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
+<path d="M16 26c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
+</symbol>
+<symbol id="icon-file-text2" viewbox="0 0 32 32">
+<path d="M28.681 7.159c-0.694-0.947-1.662-2.053-2.724-3.116s-2.169-2.030-3.116-2.724c-1.612-1.182-2.393-1.319-2.841-1.319h-15.5c-1.378 0-2.5 1.121-2.5 2.5v27c0 1.378 1.122 2.5 2.5 2.5h23c1.378 0 2.5-1.122 2.5-2.5v-19.5c0-0.448-0.137-1.23-1.319-2.841zM24.543 5.457c0.959 0.959 1.712 1.825 2.268 2.543h-4.811v-4.811c0.718 0.556 1.584 1.309 2.543 2.268zM28 29.5c0 0.271-0.229 0.5-0.5 0.5h-23c-0.271 0-0.5-0.229-0.5-0.5v-27c0-0.271 0.229-0.5 0.5-0.5 0 0 15.499-0 15.5 0v7c0 0.552 0.448 1 1 1h7v19.5z"></path>
+<path d="M23 26h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+<path d="M23 22h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+<path d="M23 18h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+</symbol>
+</defs>
+</svg>
+<style>/* CSS stylesheet for displaying xarray objects in jupyterlab.
+ *
+ */
+
+:root {
+  --xr-font-color0: var(--jp-content-font-color0, rgba(0, 0, 0, 1));
+  --xr-font-color2: var(--jp-content-font-color2, rgba(0, 0, 0, 0.54));
+  --xr-font-color3: var(--jp-content-font-color3, rgba(0, 0, 0, 0.38));
+  --xr-border-color: var(--jp-border-color2, #e0e0e0);
+  --xr-disabled-color: var(--jp-layout-color3, #bdbdbd);
+  --xr-background-color: var(--jp-layout-color0, white);
+  --xr-background-color-row-even: var(--jp-layout-color1, white);
+  --xr-background-color-row-odd: var(--jp-layout-color2, #eeeeee);
+}
+
+html[theme=dark],
+body[data-theme=dark],
+body.vscode-dark {
+  --xr-font-color0: rgba(255, 255, 255, 1);
+  --xr-font-color2: rgba(255, 255, 255, 0.54);
+  --xr-font-color3: rgba(255, 255, 255, 0.38);
+  --xr-border-color: #1F1F1F;
+  --xr-disabled-color: #515151;
+  --xr-background-color: #111111;
+  --xr-background-color-row-even: #111111;
+  --xr-background-color-row-odd: #313131;
+}
+
+.xr-wrap {
+  display: block !important;
+  min-width: 300px;
+  max-width: 700px;
+}
+
+.xr-text-repr-fallback {
+  /* fallback to plain text repr when CSS is not injected (untrusted notebook) */
+  display: none;
+}
+
+.xr-header {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+  border-bottom: solid 1px var(--xr-border-color);
+}
+
+.xr-header > div,
+.xr-header > ul {
+  display: inline;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.xr-obj-type,
+.xr-array-name {
+  margin-left: 2px;
+  margin-right: 10px;
+}
+
+.xr-obj-type {
+  color: var(--xr-font-color2);
+}
+
+.xr-sections {
+  padding-left: 0 !important;
+  display: grid;
+  grid-template-columns: 150px auto auto 1fr 20px 20px;
+}
+
+.xr-section-item {
+  display: contents;
+}
+
+.xr-section-item input {
+  display: none;
+}
+
+.xr-section-item input + label {
+  color: var(--xr-disabled-color);
+}
+
+.xr-section-item input:enabled + label {
+  cursor: pointer;
+  color: var(--xr-font-color2);
+}
+
+.xr-section-item input:enabled + label:hover {
+  color: var(--xr-font-color0);
+}
+
+.xr-section-summary {
+  grid-column: 1;
+  color: var(--xr-font-color2);
+  font-weight: 500;
+}
+
+.xr-section-summary > span {
+  display: inline-block;
+  padding-left: 0.5em;
+}
+
+.xr-section-summary-in:disabled + label {
+  color: var(--xr-font-color2);
+}
+
+.xr-section-summary-in + label:before {
+  display: inline-block;
+  content: '►';
+  font-size: 11px;
+  width: 15px;
+  text-align: center;
+}
+
+.xr-section-summary-in:disabled + label:before {
+  color: var(--xr-disabled-color);
+}
+
+.xr-section-summary-in:checked + label:before {
+  content: '▼';
+}
+
+.xr-section-summary-in:checked + label > span {
+  display: none;
+}
+
+.xr-section-summary,
+.xr-section-inline-details {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.xr-section-inline-details {
+  grid-column: 2 / -1;
+}
+
+.xr-section-details {
+  display: none;
+  grid-column: 1 / -1;
+  margin-bottom: 5px;
+}
+
+.xr-section-summary-in:checked ~ .xr-section-details {
+  display: contents;
+}
+
+.xr-array-wrap {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 20px auto;
+}
+
+.xr-array-wrap > label {
+  grid-column: 1;
+  vertical-align: top;
+}
+
+.xr-preview {
+  color: var(--xr-font-color3);
+}
+
+.xr-array-preview,
+.xr-array-data {
+  padding: 0 5px !important;
+  grid-column: 2;
+}
+
+.xr-array-data,
+.xr-array-in:checked ~ .xr-array-preview {
+  display: none;
+}
+
+.xr-array-in:checked ~ .xr-array-data,
+.xr-array-preview {
+  display: inline-block;
+}
+
+.xr-dim-list {
+  display: inline-block !important;
+  list-style: none;
+  padding: 0 !important;
+  margin: 0;
+}
+
+.xr-dim-list li {
+  display: inline-block;
+  padding: 0;
+  margin: 0;
+}
+
+.xr-dim-list:before {
+  content: '(';
+}
+
+.xr-dim-list:after {
+  content: ')';
+}
+
+.xr-dim-list li:not(:last-child):after {
+  content: ',';
+  padding-right: 5px;
+}
+
+.xr-has-index {
+  font-weight: bold;
+}
+
+.xr-var-list,
+.xr-var-item {
+  display: contents;
+}
+
+.xr-var-item > div,
+.xr-var-item label,
+.xr-var-item > .xr-var-name span {
+  background-color: var(--xr-background-color-row-even);
+  margin-bottom: 0;
+}
+
+.xr-var-item > .xr-var-name:hover span {
+  padding-right: 5px;
+}
+
+.xr-var-list > li:nth-child(odd) > div,
+.xr-var-list > li:nth-child(odd) > label,
+.xr-var-list > li:nth-child(odd) > .xr-var-name span {
+  background-color: var(--xr-background-color-row-odd);
+}
+
+.xr-var-name {
+  grid-column: 1;
+}
+
+.xr-var-dims {
+  grid-column: 2;
+}
+
+.xr-var-dtype {
+  grid-column: 3;
+  text-align: right;
+  color: var(--xr-font-color2);
+}
+
+.xr-var-preview {
+  grid-column: 4;
+}
+
+.xr-index-preview {
+  grid-column: 2 / 5;
+  color: var(--xr-font-color2);
+}
+
+.xr-var-name,
+.xr-var-dims,
+.xr-var-dtype,
+.xr-preview,
+.xr-attrs dt {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 10px;
+}
+
+.xr-var-name:hover,
+.xr-var-dims:hover,
+.xr-var-dtype:hover,
+.xr-attrs dt:hover {
+  overflow: visible;
+  width: auto;
+  z-index: 1;
+}
+
+.xr-var-attrs,
+.xr-var-data,
+.xr-index-data {
+  display: none;
+  background-color: var(--xr-background-color) !important;
+  padding-bottom: 5px !important;
+}
+
+.xr-var-attrs-in:checked ~ .xr-var-attrs,
+.xr-var-data-in:checked ~ .xr-var-data,
+.xr-index-data-in:checked ~ .xr-index-data {
+  display: block;
+}
+
+.xr-var-data > table {
+  float: right;
+}
+
+.xr-var-name span,
+.xr-var-data,
+.xr-index-name div,
+.xr-index-data,
+.xr-attrs {
+  padding-left: 25px !important;
+}
+
+.xr-attrs,
+.xr-var-attrs,
+.xr-var-data,
+.xr-index-data {
+  grid-column: 1 / -1;
+}
+
+dl.xr-attrs {
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 125px auto;
+}
+
+.xr-attrs dt,
+.xr-attrs dd {
+  padding: 0;
+  margin: 0;
+  float: left;
+  padding-right: 10px;
+  width: auto;
+}
+
+.xr-attrs dt {
+  font-weight: normal;
+  grid-column: 1;
+}
+
+.xr-attrs dt:hover span {
+  display: inline-block;
+  background: var(--xr-background-color);
+  padding-right: 10px;
+}
+
+.xr-attrs dd {
+  grid-column: 2;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.xr-icon-database,
+.xr-icon-file-text2,
+.xr-no-icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 1em;
+  height: 1.5em !important;
+  stroke-width: 0;
+  stroke: currentColor;
+  fill: currentColor;
+}
+</style><pre class="xr-text-repr-fallback">&lt;xarray.Dataset&gt; Size: 2GB
+Dimensions:         (time: 366, lat: 291, lon: 512, bnds: 2)
+Coordinates:
+  * lat             (lat) float64 2kB 34.36 34.33 34.3 ... 24.97 24.94 24.9
+  * lon             (lon) float64 4kB 68.15 68.19 68.22 ... 84.75 84.79 84.82
+  * time            (time) datetime64[ns] 3kB 2019-01-03T12:00:00 ... 2024-01...
+    time_bnds       (time, bnds) datetime64[ns] 6kB ...
+Dimensions without coordinates: bnds
+Data variables:
+    AER_AI_340_380  (time, lat, lon) float32 218MB ...
+    AER_AI_354_388  (time, lat, lon) float32 218MB ...
+    CH4             (time, lat, lon) float32 218MB ...
+    CLOUD_FRACTION  (time, lat, lon) float32 218MB ...
+    CO              (time, lat, lon) float32 218MB ...
+    HCHO            (time, lat, lon) float32 218MB ...
+    NO2             (time, lat, lon) float32 218MB ...
+    O3              (time, lat, lon) float32 218MB ...
+    SO2             (time, lat, lon) float32 218MB ...
+Attributes:
+    Conventions:               CF-1.7
+    title:                     S5PL2 Data Cube Subset
+    history:                   [{'program': 'xcube_sh.chunkstore.SentinelHubC...
+    date_created:              2024-05-02T13:00:01.155492
+    time_coverage_start:       2019-01-01T00:00:00+00:00
+    time_coverage_end:         2024-01-05T00:00:00+00:00
+    time_coverage_duration:    P1830DT0H0M0S
+    time_coverage_resolution:  P5DT0H0M0S
+    geospatial_lon_min:        68.137207
+    geospatial_lat_min:        24.886436
+    geospatial_lon_max:        84.836426
+    geospatial_lat_max:        34.37759367382812</pre><div class="xr-wrap" style="display:none"><div class="xr-header"><div class="xr-obj-type">xarray.Dataset</div></div><ul class="xr-sections"><li class="xr-section-item"><input id="section-e0178ff3-d9c8-40fc-9aad-afe9477bd731" class="xr-section-summary-in" type="checkbox" disabled=""><label for="section-e0178ff3-d9c8-40fc-9aad-afe9477bd731" class="xr-section-summary" title="Expand/collapse section">Dimensions:</label><div class="xr-section-inline-details"><ul class="xr-dim-list"><li><span class="xr-has-index">time</span>: 366</li><li><span class="xr-has-index">lat</span>: 291</li><li><span class="xr-has-index">lon</span>: 512</li><li><span>bnds</span>: 2</li></ul></div><div class="xr-section-details"></div></li><li class="xr-section-item"><input id="section-d005cbdc-d853-4380-a096-17a39801a57b" class="xr-section-summary-in" type="checkbox" checked=""><label for="section-d005cbdc-d853-4380-a096-17a39801a57b" class="xr-section-summary">Coordinates: <span>(4)</span></label><div class="xr-section-inline-details"></div><div class="xr-section-details"><ul class="xr-var-list"><li class="xr-var-item"><div class="xr-var-name"><span class="xr-has-index">lat</span></div><div class="xr-var-dims">(lat)</div><div class="xr-var-dtype">float64</div><div class="xr-var-preview xr-preview">34.36 34.33 34.3 ... 24.94 24.9</div><input id="attrs-1612ec81-e1d5-4b3c-a5c0-9efdd8f6d8d3" class="xr-var-attrs-in" type="checkbox"><label for="attrs-1612ec81-e1d5-4b3c-a5c0-9efdd8f6d8d3" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-c3316d8a-2165-4571-9cb5-39f13b1a6bb4" class="xr-var-data-in" type="checkbox"><label for="data-c3316d8a-2165-4571-9cb5-39f13b1a6bb4" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>units :</span></dt><dd>decimal_degrees</dd><dt><span>long_name :</span></dt><dd>latitude</dd><dt><span>standard_name :</span></dt><dd>latitude</dd></dl></div><div class="xr-var-data"><pre>array([34.361286, 34.32867 , 34.296055, ..., 24.967975, 24.935359, 24.902744])</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span class="xr-has-index">lon</span></div><div class="xr-var-dims">(lon)</div><div class="xr-var-dtype">float64</div><div class="xr-var-preview xr-preview">68.15 68.19 68.22 ... 84.79 84.82</div><input id="attrs-ed7a0e9d-252b-4087-a78f-f87724deb606" class="xr-var-attrs-in" type="checkbox"><label for="attrs-ed7a0e9d-252b-4087-a78f-f87724deb606" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-7694a1ea-75b4-41be-930c-2d2538f4cf05" class="xr-var-data-in" type="checkbox"><label for="data-7694a1ea-75b4-41be-930c-2d2538f4cf05" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>units :</span></dt><dd>decimal_degrees</dd><dt><span>long_name :</span></dt><dd>longitude</dd><dt><span>standard_name :</span></dt><dd>longitude</dd></dl></div><div class="xr-var-data"><pre>array([68.153515, 68.18613 , 68.218746, ..., 84.754887, 84.787503, 84.820118])</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span class="xr-has-index">time</span></div><div class="xr-var-dims">(time)</div><div class="xr-var-dtype">datetime64[ns]</div><div class="xr-var-preview xr-preview">2019-01-03T12:00:00 ... 2024-01-...</div><input id="attrs-ddda0e46-052a-49b8-a903-daa1bf88b806" class="xr-var-attrs-in" type="checkbox"><label for="attrs-ddda0e46-052a-49b8-a903-daa1bf88b806" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-1ff753a2-269e-4d86-b3f2-1fa948a715af" class="xr-var-data-in" type="checkbox"><label for="data-1ff753a2-269e-4d86-b3f2-1fa948a715af" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>standard_name :</span></dt><dd>time</dd><dt><span>bounds :</span></dt><dd>time_bnds</dd></dl></div><div class="xr-var-data"><pre>array(['2019-01-03T12:00:00.000000000', '2019-01-08T12:00:00.000000000',
+       '2019-01-13T12:00:00.000000000', ..., '2023-12-23T12:00:00.000000000',
+       '2023-12-28T12:00:00.000000000', '2024-01-02T12:00:00.000000000'],
+      dtype='datetime64[ns]')</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>time_bnds</span></div><div class="xr-var-dims">(time, bnds)</div><div class="xr-var-dtype">datetime64[ns]</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-00b32ebf-2419-41f1-b8d3-f6c6a4ccb7d4" class="xr-var-attrs-in" type="checkbox" disabled=""><label for="attrs-00b32ebf-2419-41f1-b8d3-f6c6a4ccb7d4" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-4a360ab9-da06-4ef3-b330-7758270faa77" class="xr-var-data-in" type="checkbox"><label for="data-4a360ab9-da06-4ef3-b330-7758270faa77" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"></dl></div><div class="xr-var-data"><pre>[732 values with dtype=datetime64[ns]]</pre></div></li></ul></div></li><li class="xr-section-item"><input id="section-a599a01c-ec51-4d4b-ba8c-d4773d9f3fab" class="xr-section-summary-in" type="checkbox" checked=""><label for="section-a599a01c-ec51-4d4b-ba8c-d4773d9f3fab" class="xr-section-summary">Data variables: <span>(9)</span></label><div class="xr-section-inline-details"></div><div class="xr-section-details"><ul class="xr-var-list"><li class="xr-var-item"><div class="xr-var-name"><span>AER_AI_340_380</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-14c06831-5af6-499b-adab-f0badc675ef3" class="xr-var-attrs-in" type="checkbox"><label for="attrs-14c06831-5af6-499b-adab-f0badc675ef3" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-d6c47dd7-cc2c-458d-ad03-34e000498213" class="xr-var-data-in" type="checkbox"><label for="data-d6c47dd7-cc2c-458d-ad03-34e000498213" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>Unitless</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>AER_AI_354_388</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-f0abd167-ed75-4291-9fef-cb58de510ab7" class="xr-var-attrs-in" type="checkbox"><label for="attrs-f0abd167-ed75-4291-9fef-cb58de510ab7" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-9fba4cc4-0f50-4278-b8a3-843ecc113792" class="xr-var-data-in" type="checkbox"><label for="data-9fba4cc4-0f50-4278-b8a3-843ecc113792" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>Unitless</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>CH4</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-6d1d48ff-dffc-448d-baff-f23c92195d0e" class="xr-var-attrs-in" type="checkbox"><label for="attrs-6d1d48ff-dffc-448d-baff-f23c92195d0e" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-76395a5f-8fbb-49e4-808d-f3c3559edc4e" class="xr-var-data-in" type="checkbox"><label for="data-76395a5f-8fbb-49e4-808d-f3c3559edc4e" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>parts per billion</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>CLOUD_FRACTION</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-ef98e161-4991-4ab6-b405-83c3775a24da" class="xr-var-attrs-in" type="checkbox"><label for="attrs-ef98e161-4991-4ab6-b405-83c3775a24da" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-d62546e1-8921-4185-b4ed-528b8e608e23" class="xr-var-data-in" type="checkbox"><label for="data-d62546e1-8921-4185-b4ed-528b8e608e23" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>Unitless</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>CO</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-1c66eaaa-0445-4739-a8ac-e40353e87c4e" class="xr-var-attrs-in" type="checkbox"><label for="attrs-1c66eaaa-0445-4739-a8ac-e40353e87c4e" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-08387e09-07a5-44e5-b1f6-85f934bd603b" class="xr-var-data-in" type="checkbox"><label for="data-08387e09-07a5-44e5-b1f6-85f934bd603b" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>mol/m^2</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>HCHO</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-2d0aea79-8015-4ecb-bb19-8b59b514b291" class="xr-var-attrs-in" type="checkbox"><label for="attrs-2d0aea79-8015-4ecb-bb19-8b59b514b291" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-e4f98b1f-d111-49e5-8092-76dbcb9dabf7" class="xr-var-data-in" type="checkbox"><label for="data-e4f98b1f-d111-49e5-8092-76dbcb9dabf7" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>mol/m^2</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>NO2</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-d97ee8da-ec92-4b73-a199-b76e93dee34b" class="xr-var-attrs-in" type="checkbox"><label for="attrs-d97ee8da-ec92-4b73-a199-b76e93dee34b" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-5a593ae2-905b-43e0-b103-4bd16dc1c52e" class="xr-var-data-in" type="checkbox"><label for="data-5a593ae2-905b-43e0-b103-4bd16dc1c52e" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>mol/m^2</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>O3</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-142f3ff2-a42f-4f87-b489-ea1ced8ac9d6" class="xr-var-attrs-in" type="checkbox"><label for="attrs-142f3ff2-a42f-4f87-b489-ea1ced8ac9d6" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-c4c97d00-412c-41bd-945b-78111bcd6efe" class="xr-var-data-in" type="checkbox"><label for="data-c4c97d00-412c-41bd-945b-78111bcd6efe" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>mol/m^2</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>SO2</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-82db4e82-0ba5-4855-bffb-9788ad16867f" class="xr-var-attrs-in" type="checkbox"><label for="attrs-82db4e82-0ba5-4855-bffb-9788ad16867f" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-fc53c3e7-898f-4610-9e0c-ce44cbf87659" class="xr-var-data-in" type="checkbox"><label for="data-fc53c3e7-898f-4610-9e0c-ce44cbf87659" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>mol/m^2</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li></ul></div></li><li class="xr-section-item"><input id="section-ccccd368-91b6-44ee-9fe0-1bb1e94ce442" class="xr-section-summary-in" type="checkbox"><label for="section-ccccd368-91b6-44ee-9fe0-1bb1e94ce442" class="xr-section-summary">Indexes: <span>(3)</span></label><div class="xr-section-inline-details"></div><div class="xr-section-details"><ul class="xr-var-list"><li class="xr-var-item"><div class="xr-index-name"><div>lat</div></div><div class="xr-index-preview">PandasIndex</div><div></div><input id="index-b8fcd477-3006-4a50-a783-3a06bde55d80" class="xr-index-data-in" type="checkbox"><label for="index-b8fcd477-3006-4a50-a783-3a06bde55d80" title="Show/Hide index repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-index-data"><pre>PandasIndex(Index([34.361285842773434,  34.32867018066406,  34.29605451855468,
+        34.26343885644531,  34.23082319433593,  34.19820753222656,
+        34.16559187011718,  34.13297620800781,  34.10036054589843,
+        34.06774488378906,
+       ...
+        25.19628479003906, 25.163669127929687,  25.13105346582031,
+       25.098437803710937,  25.06582214160156, 25.033206479492186,
+        25.00059081738281, 24.967975155273436,  24.93535949316406,
+       24.902743831054686],
+      dtype='float64', name='lat', length=291))</pre></div></li><li class="xr-var-item"><div class="xr-index-name"><div>lon</div></div><div class="xr-index-preview">PandasIndex</div><div></div><input id="index-1ad7c093-252d-4853-864e-0fffeb7b38ad" class="xr-index-data-in" type="checkbox"><label for="index-1ad7c093-252d-4853-864e-0fffeb7b38ad" title="Show/Hide index repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-index-data"><pre>PandasIndex(Index([ 68.1535148310547, 68.18613049316407, 68.21874615527344,
+       68.25136181738281,  68.2839774794922, 68.31659314160157,
+       68.34920880371094, 68.38182446582032,  68.4144401279297,
+       68.44705579003907,
+       ...
+       84.52657720996093, 84.55919287207031, 84.59180853417969,
+       84.62442419628906, 84.65703985839843, 84.68965552050781,
+       84.72227118261719, 84.75488684472657, 84.78750250683593,
+       84.82011816894531],
+      dtype='float64', name='lon', length=512))</pre></div></li><li class="xr-var-item"><div class="xr-index-name"><div>time</div></div><div class="xr-index-preview">PandasIndex</div><div></div><input id="index-0246dc2a-30af-4d67-b094-37c1da37538a" class="xr-index-data-in" type="checkbox"><label for="index-0246dc2a-30af-4d67-b094-37c1da37538a" title="Show/Hide index repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-index-data"><pre>PandasIndex(DatetimeIndex(['2019-01-03 12:00:00', '2019-01-08 12:00:00',
+               '2019-01-13 12:00:00', '2019-01-18 12:00:00',
+               '2019-01-23 12:00:00', '2019-01-28 12:00:00',
+               '2019-02-02 12:00:00', '2019-02-07 12:00:00',
+               '2019-02-12 12:00:00', '2019-02-17 12:00:00',
+               ...
+               '2023-11-18 12:00:00', '2023-11-23 12:00:00',
+               '2023-11-28 12:00:00', '2023-12-03 12:00:00',
+               '2023-12-08 12:00:00', '2023-12-13 12:00:00',
+               '2023-12-18 12:00:00', '2023-12-23 12:00:00',
+               '2023-12-28 12:00:00', '2024-01-02 12:00:00'],
+              dtype='datetime64[ns]', name='time', length=366, freq=None))</pre></div></li></ul></div></li><li class="xr-section-item"><input id="section-31f16a0d-3f1c-45b7-a2d9-d024320605af" class="xr-section-summary-in" type="checkbox"><label for="section-31f16a0d-3f1c-45b7-a2d9-d024320605af" class="xr-section-summary">Attributes: <span>(12)</span></label><div class="xr-section-inline-details"></div><div class="xr-section-details"><dl class="xr-attrs"><dt><span>Conventions :</span></dt><dd>CF-1.7</dd><dt><span>title :</span></dt><dd>S5PL2 Data Cube Subset</dd><dt><span>history :</span></dt><dd>[{'program': 'xcube_sh.chunkstore.SentinelHubChunkStore', 'cube_config': {'dataset_name': 'S5PL2', 'band_names': ['NO2', 'SO2', 'O3', 'CO', 'CH4', 'HCHO', 'AER_AI_340_380', 'AER_AI_354_388', 'CLOUD_FRACTION'], 'band_fill_values': None, 'band_sample_types': None, 'band_units': None, 'tile_size': [512, 291], 'bbox': [68.137207, 24.886436, 84.836426, 34.37759367382812], 'spatial_res': 0.032615662109375, 'crs': 'WGS84', 'upsampling': 'BILINEAR', 'downsampling': 'NEAREST', 'mosaicking_order': 'mostRecent', 'time_range': ['2019-01-01T00:00:00+00:00', '2023-12-31T00:00:00+00:00'], 'time_period': '5 days 00:00:00', 'time_tolerance': None, 'collection_id': None, 'four_d': False}}]</dd><dt><span>date_created :</span></dt><dd>2024-05-02T13:00:01.155492</dd><dt><span>time_coverage_start :</span></dt><dd>2019-01-01T00:00:00+00:00</dd><dt><span>time_coverage_end :</span></dt><dd>2024-01-05T00:00:00+00:00</dd><dt><span>time_coverage_duration :</span></dt><dd>P1830DT0H0M0S</dd><dt><span>time_coverage_resolution :</span></dt><dd>P5DT0H0M0S</dd><dt><span>geospatial_lon_min :</span></dt><dd>68.137207</dd><dt><span>geospatial_lat_min :</span></dt><dd>24.886436</dd><dt><span>geospatial_lon_max :</span></dt><dd>84.836426</dd><dt><span>geospatial_lat_max :</span></dt><dd>34.37759367382812</dd></dl></div></li></ul></div></div>
+</div>
+</div></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [3]:</pre></div><div id="cell-4" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Stack the features into a single DataArray</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>features <span class="op">=</span> [<span class="st">'SO2'</span>, <span class="st">'NO2'</span>, <span class="st">'CH4'</span>, <span class="st">'O3'</span>, <span class="st">'CO'</span>, <span class="st">'HCHO'</span>]</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> xr.concat([ds[feature] <span class="cf">for</span> feature <span class="kw">in</span> features], dim<span class="op">=</span><span class="st">'feature'</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> data.transpose(<span class="st">'time'</span>, <span class="st">'lat'</span>, <span class="st">'lon'</span>, <span class="st">'feature'</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to NumPy arrays</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>X_data <span class="op">=</span> data.values.astype(np.float32)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Normalize the input data</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>scaler <span class="op">=</span> StandardScaler()</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>X_data <span class="op">=</span> scaler.fit_transform(X_data.reshape(<span class="op">-</span><span class="dv">1</span>, X_data.shape[<span class="op">-</span><span class="dv">1</span>])).reshape(X_data.shape)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Impute nan values with the mean of the respective feature</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>X_data_reshaped <span class="op">=</span> X_data.reshape(<span class="op">-</span><span class="dv">1</span>, X_data.shape[<span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>imputer <span class="op">=</span> SimpleImputer(strategy<span class="op">=</span><span class="st">'mean'</span>)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>X_data_imputed <span class="op">=</span> imputer.fit_transform(X_data_reshaped)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>X_data_imputed <span class="op">=</span> X_data_imputed.reshape(X_data.shape)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the time dimension to the input data</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>X_data_imputed <span class="op">=</span> np.expand_dims(X_data_imputed, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Load your actual target data</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>ds_target <span class="op">=</span> xr.open_dataset(<span class="st">'S5PL2_5D.nc'</span>)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>target_data <span class="op">=</span> ds_target[<span class="st">'AER_AI_340_380'</span>].values.astype(np.float32)</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Normalize target data to [0, 1]</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>target_scaler <span class="op">=</span> MinMaxScaler()</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>target_data <span class="op">=</span> target_scaler.fit_transform(target_data.reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)).reshape(target_data.shape)</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="co"># Impute nan values in target data</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>target_data_reshaped <span class="op">=</span> target_data.reshape(<span class="op">-</span><span class="dv">1</span>, target_data.shape[<span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>target_data_imputed <span class="op">=</span> imputer.fit_transform(target_data_reshaped)</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>target_data_imputed <span class="op">=</span> target_data_imputed.reshape(target_data.shape)</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure the target data shape is (num_samples, num_timesteps, num_latitudes, num_longitudes, 1)</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>target_data_imputed <span class="op">=</span> target_data_imputed.reshape((target_data.shape[<span class="dv">0</span>], <span class="dv">1</span>, target_data.shape[<span class="dv">1</span>], target_data.shape[<span class="dv">2</span>], <span class="dv">1</span>))</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove samples with nan values in target data</span></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>non_nan_target_indices <span class="op">=</span> <span class="op">~</span>np.isnan(target_data_imputed).<span class="bu">any</span>(axis<span class="op">=</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>))</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>X_data_clean <span class="op">=</span> X_data_imputed[non_nan_target_indices]</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>y_data_clean <span class="op">=</span> target_data_imputed[non_nan_target_indices]</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure target values are within the valid range [0, 1]</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Target data range: "</span>, y_data_clean.<span class="bu">max</span>(), y_data_clean.<span class="bu">min</span>())</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a><span class="co"># Split data into training and validation sets</span></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>split_ratio <span class="op">=</span> <span class="fl">0.8</span></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>split_idx <span class="op">=</span> <span class="bu">int</span>(split_ratio <span class="op">*</span> X_data_clean.shape[<span class="dv">0</span>])</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>X_train, X_val <span class="op">=</span> X_data_clean[:split_idx], X_data_clean[split_idx:]</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>y_train, y_val <span class="op">=</span> y_data_clean[:split_idx], y_data_clean[split_idx:]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Target data range:  1.0 0.0</code></pre>
+</div>
+</div></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [4]:</pre></div><div id="cell-5" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Input shape:"</span>, X_data_clean.shape)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Target shape:"</span>, y_data_clean.shape)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Max and Min of Target Data:"</span>, y_data_clean.<span class="bu">max</span>(), y_data_clean.<span class="bu">min</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Input shape: (366, 1, 291, 512, 6)
+Target shape: (366, 1, 291, 512, 1)
+Max and Min of Target Data: 1.0 0.0</code></pre>
+</div>
+</div></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [5]:</pre></div><div id="cell-6" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Training data shape:"</span>, X_train.shape)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Validation data shape:"</span>, X_val.shape)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Training target shape:"</span>, y_train.shape)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Validation target shape:"</span>, y_val.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Training data shape: (292, 1, 291, 512, 6)
+Validation data shape: (74, 1, 291, 512, 6)
+Training target shape: (292, 1, 291, 512, 1)
+Validation target shape: (74, 1, 291, 512, 1)</code></pre>
+</div>
+</div></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [6]:</pre></div><div id="cell-7" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize a sample from the training data</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>sample_index <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>plt.imshow(X_train[sample_index, <span class="dv">0</span>, :, :, <span class="dv">2</span>], cmap<span class="op">=</span><span class="st">'viridis'</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Sample Input'</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>plt.imshow(y_train[sample_index, <span class="dv">0</span>, :, :, <span class="dv">0</span>], cmap<span class="op">=</span><span class="st">'viridis'</span>)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Sample Target'</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="smogseer100_files/figure-html/cell-7-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="smogseer100_files/figure-html/cell-7-output-1.png" class="img-fluid figure-img"></a></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="smogseer100_files/figure-html/cell-7-output-2.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="smogseer100_files/figure-html/cell-7-output-2.png" class="img-fluid figure-img"></a></p>
+</figure>
+</div>
+</div>
+</div></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [31]:</pre></div><div id="cell-8" class="cell" data-execution_count="31">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>np.save(<span class="st">"X_val.npy"</span>, X_val)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>np.save(<span class="st">"Y_val.npy"</span>, y_val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [7]:</pre></div><div id="cell-9" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the model with correct input shape</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>inp <span class="op">=</span> layers.Input(shape<span class="op">=</span>(<span class="dv">1</span>, X_data_clean.shape[<span class="dv">2</span>], X_data_clean.shape[<span class="dv">3</span>], X_data_clean.shape[<span class="dv">4</span>]))</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> layers.BatchNormalization()(inp)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> layers.ConvLSTM2D(</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    filters<span class="op">=</span><span class="dv">16</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    kernel_size<span class="op">=</span>(<span class="dv">3</span>, <span class="dv">3</span>),</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    padding<span class="op">=</span><span class="st">"same"</span>,</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    return_sequences<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    activation<span class="op">=</span><span class="st">"tanh"</span>,</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    recurrent_activation<span class="op">=</span><span class="st">"sigmoid"</span>,</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    kernel_initializer<span class="op">=</span><span class="st">"glorot_uniform"</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>)(x)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> layers.BatchNormalization()(x)</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> layers.ConvLSTM2D(</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    filters<span class="op">=</span><span class="dv">32</span>,</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    kernel_size<span class="op">=</span>(<span class="dv">3</span>, <span class="dv">3</span>),</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    padding<span class="op">=</span><span class="st">"same"</span>,</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    return_sequences<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    activation<span class="op">=</span><span class="st">"tanh"</span>,</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    recurrent_activation<span class="op">=</span><span class="st">"sigmoid"</span>,</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    kernel_initializer<span class="op">=</span><span class="st">"glorot_uniform"</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>)(x)</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> layers.BatchNormalization()(x)</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> layers.Conv3D(</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    filters<span class="op">=</span><span class="dv">1</span>, kernel_size<span class="op">=</span>(<span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>), activation<span class="op">=</span><span class="st">"sigmoid"</span>, padding<span class="op">=</span><span class="st">"same"</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>)(x)</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> keras.models.Model(inp, x, name<span class="op">=</span><span class="st">"smogseer"</span>)</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Use a reduced learning rate and gradient clipping</span></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> keras.optimizers.Adam(learning_rate<span class="op">=</span><span class="fl">1e-5</span>, clipnorm<span class="op">=</span><span class="fl">1.0</span>)</span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>model.<span class="bu">compile</span>(</span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>    loss<span class="op">=</span>keras.losses.binary_crossentropy,</span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>    optimizer<span class="op">=</span>optimizer,</span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>    metrics<span class="op">=</span>[<span class="st">'mean_squared_error'</span>]</span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the model summary</span></span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>model.summary()</span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a><span class="co"># Data Generator Class</span></span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> DataGenerator(Sequence):</span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, X_data, y_data, batch_size):</span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.X_data <span class="op">=</span> X_data</span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.y_data <span class="op">=</span> y_data</span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.batch_size <span class="op">=</span> batch_size</span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.indices <span class="op">=</span> np.arange(X_data.shape[<span class="dv">0</span>])</span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__len__</span>(<span class="va">self</span>):</span>
+<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">int</span>(np.ceil(<span class="bu">len</span>(<span class="va">self</span>.indices) <span class="op">/</span> <span class="va">self</span>.batch_size))</span>
+<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__getitem__</span>(<span class="va">self</span>, index):</span>
+<span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a>        batch_indices <span class="op">=</span> <span class="va">self</span>.indices[index <span class="op">*</span> <span class="va">self</span>.batch_size:(index <span class="op">+</span> <span class="dv">1</span>) <span class="op">*</span> <span class="va">self</span>.batch_size]</span>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a>        batch_X <span class="op">=</span> <span class="va">self</span>.X_data[batch_indices]</span>
+<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a>        batch_y <span class="op">=</span> <span class="va">self</span>.y_data[batch_indices]</span>
+<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> batch_X, batch_y</span>
+<span id="cb11-59"><a href="#cb11-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-60"><a href="#cb11-60" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> on_epoch_end(<span class="va">self</span>):</span>
+<span id="cb11-61"><a href="#cb11-61" aria-hidden="true" tabindex="-1"></a>        np.random.shuffle(<span class="va">self</span>.indices)</span>
+<span id="cb11-62"><a href="#cb11-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-63"><a href="#cb11-63" aria-hidden="true" tabindex="-1"></a>batch_size <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb11-64"><a href="#cb11-64" aria-hidden="true" tabindex="-1"></a>train_generator <span class="op">=</span> DataGenerator(X_train, y_train, batch_size)</span>
+<span id="cb11-65"><a href="#cb11-65" aria-hidden="true" tabindex="-1"></a>val_generator <span class="op">=</span> DataGenerator(X_val, y_val, batch_size)</span>
+<span id="cb11-66"><a href="#cb11-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-67"><a href="#cb11-67" aria-hidden="true" tabindex="-1"></a><span class="co"># Define callbacks for monitoring and adjusting learning rate</span></span>
+<span id="cb11-68"><a href="#cb11-68" aria-hidden="true" tabindex="-1"></a>callbacks <span class="op">=</span> [</span>
+<span id="cb11-69"><a href="#cb11-69" aria-hidden="true" tabindex="-1"></a>    keras.callbacks.ReduceLROnPlateau(</span>
+<span id="cb11-70"><a href="#cb11-70" aria-hidden="true" tabindex="-1"></a>        monitor<span class="op">=</span><span class="st">'val_loss'</span>, factor<span class="op">=</span><span class="fl">0.1</span>, patience<span class="op">=</span><span class="dv">10</span>, verbose<span class="op">=</span><span class="dv">1</span>, min_lr<span class="op">=</span><span class="fl">1e-7</span></span>
+<span id="cb11-71"><a href="#cb11-71" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb11-72"><a href="#cb11-72" aria-hidden="true" tabindex="-1"></a>    keras.callbacks.EarlyStopping(</span>
+<span id="cb11-73"><a href="#cb11-73" aria-hidden="true" tabindex="-1"></a>        monitor<span class="op">=</span><span class="st">'val_loss'</span>, patience<span class="op">=</span><span class="dv">15</span>, verbose<span class="op">=</span><span class="dv">1</span>, restore_best_weights<span class="op">=</span><span class="va">True</span></span>
+<span id="cb11-74"><a href="#cb11-74" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb11-75"><a href="#cb11-75" aria-hidden="true" tabindex="-1"></a>    keras.callbacks.TensorBoard(log_dir<span class="op">=</span><span class="st">'./logs'</span>)</span>
+<span id="cb11-76"><a href="#cb11-76" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb11-77"><a href="#cb11-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-78"><a href="#cb11-78" aria-hidden="true" tabindex="-1"></a><span class="co"># Train the model using data generators</span></span>
+<span id="cb11-79"><a href="#cb11-79" aria-hidden="true" tabindex="-1"></a>history <span class="op">=</span> model.fit(train_generator, epochs<span class="op">=</span><span class="dv">100</span>, validation_data<span class="op">=</span>val_generator, callbacks<span class="op">=</span>callbacks)</span>
+<span id="cb11-80"><a href="#cb11-80" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the model</span></span>
+<span id="cb11-81"><a href="#cb11-81" aria-hidden="true" tabindex="-1"></a>model.save(<span class="st">'smogseer.keras'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">Model: "smogseer"</span>
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
+┃<span style="font-weight: bold"> Layer (type)                    </span>┃<span style="font-weight: bold"> Output Shape           </span>┃<span style="font-weight: bold">       Param # </span>┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
+│ input_layer (<span style="color: #0087ff; text-decoration-color: #0087ff">InputLayer</span>)        │ (<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00af00; text-decoration-color: #00af00">1</span>, <span style="color: #00af00; text-decoration-color: #00af00">291</span>, <span style="color: #00af00; text-decoration-color: #00af00">512</span>, <span style="color: #00af00; text-decoration-color: #00af00">6</span>) │             <span style="color: #00af00; text-decoration-color: #00af00">0</span> │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ batch_normalization             │ (<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00af00; text-decoration-color: #00af00">1</span>, <span style="color: #00af00; text-decoration-color: #00af00">291</span>, <span style="color: #00af00; text-decoration-color: #00af00">512</span>, <span style="color: #00af00; text-decoration-color: #00af00">6</span>) │            <span style="color: #00af00; text-decoration-color: #00af00">24</span> │
+│ (<span style="color: #0087ff; text-decoration-color: #0087ff">BatchNormalization</span>)            │                        │               │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ conv_lstm2d (<span style="color: #0087ff; text-decoration-color: #0087ff">ConvLSTM2D</span>)        │ (<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00af00; text-decoration-color: #00af00">1</span>, <span style="color: #00af00; text-decoration-color: #00af00">291</span>, <span style="color: #00af00; text-decoration-color: #00af00">512</span>,    │        <span style="color: #00af00; text-decoration-color: #00af00">12,736</span> │
+│                                 │ <span style="color: #00af00; text-decoration-color: #00af00">16</span>)                    │               │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ batch_normalization_1           │ (<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00af00; text-decoration-color: #00af00">1</span>, <span style="color: #00af00; text-decoration-color: #00af00">291</span>, <span style="color: #00af00; text-decoration-color: #00af00">512</span>,    │            <span style="color: #00af00; text-decoration-color: #00af00">64</span> │
+│ (<span style="color: #0087ff; text-decoration-color: #0087ff">BatchNormalization</span>)            │ <span style="color: #00af00; text-decoration-color: #00af00">16</span>)                    │               │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ conv_lstm2d_1 (<span style="color: #0087ff; text-decoration-color: #0087ff">ConvLSTM2D</span>)      │ (<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00af00; text-decoration-color: #00af00">1</span>, <span style="color: #00af00; text-decoration-color: #00af00">291</span>, <span style="color: #00af00; text-decoration-color: #00af00">512</span>,    │        <span style="color: #00af00; text-decoration-color: #00af00">55,424</span> │
+│                                 │ <span style="color: #00af00; text-decoration-color: #00af00">32</span>)                    │               │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ batch_normalization_2           │ (<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00af00; text-decoration-color: #00af00">1</span>, <span style="color: #00af00; text-decoration-color: #00af00">291</span>, <span style="color: #00af00; text-decoration-color: #00af00">512</span>,    │           <span style="color: #00af00; text-decoration-color: #00af00">128</span> │
+│ (<span style="color: #0087ff; text-decoration-color: #0087ff">BatchNormalization</span>)            │ <span style="color: #00af00; text-decoration-color: #00af00">32</span>)                    │               │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ conv3d (<span style="color: #0087ff; text-decoration-color: #0087ff">Conv3D</span>)                 │ (<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00af00; text-decoration-color: #00af00">1</span>, <span style="color: #00af00; text-decoration-color: #00af00">291</span>, <span style="color: #00af00; text-decoration-color: #00af00">512</span>, <span style="color: #00af00; text-decoration-color: #00af00">1</span>) │           <span style="color: #00af00; text-decoration-color: #00af00">865</span> │
+└─────────────────────────────────┴────────────────────────┴───────────────┘
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold"> Total params: </span><span style="color: #00af00; text-decoration-color: #00af00">69,241</span> (270.47 KB)
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold"> Trainable params: </span><span style="color: #00af00; text-decoration-color: #00af00">69,133</span> (270.05 KB)
+</pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold"> Non-trainable params: </span><span style="color: #00af00; text-decoration-color: #00af00">108</span> (432.00 B)
+</pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Epoch 1/100</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>c:\Users\khant\Documents\smogseer\venv\lib\site-packages\keras\src\trainers\data_adapters\py_dataset_adapter.py:121: UserWarning: Your `PyDataset` class should call `super().__init__(**kwargs)` in its constructor. `**kwargs` can include `workers`, `use_multiprocessing`, `max_queue_size`. Do not pass these arguments to `fit()`, as they will be ignored.
+  self._warn_if_super_not_called()</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>292/292 ━━━━━━━━━━━━━━━━━━━━ 143s 472ms/step - loss: 0.7290 - mean_squared_error: 0.1448 - val_loss: 0.6891 - val_mean_squared_error: 0.1320 - learning_rate: 1.0000e-05
+Epoch 2/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 137s 469ms/step - loss: 0.7017 - mean_squared_error: 0.1329 - val_loss: 0.6959 - val_mean_squared_error: 0.1347 - learning_rate: 1.0000e-05
+Epoch 3/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 136s 466ms/step - loss: 0.6911 - mean_squared_error: 0.1275 - val_loss: 0.6945 - val_mean_squared_error: 0.1335 - learning_rate: 1.0000e-05
+Epoch 4/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 474ms/step - loss: 0.6827 - mean_squared_error: 0.1240 - val_loss: 0.6839 - val_mean_squared_error: 0.1284 - learning_rate: 1.0000e-05
+Epoch 5/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 136s 466ms/step - loss: 0.6741 - mean_squared_error: 0.1198 - val_loss: 0.6764 - val_mean_squared_error: 0.1248 - learning_rate: 1.0000e-05
+Epoch 6/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 141s 482ms/step - loss: 0.6639 - mean_squared_error: 0.1150 - val_loss: 0.6625 - val_mean_squared_error: 0.1180 - learning_rate: 1.0000e-05
+Epoch 7/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 150s 513ms/step - loss: 0.6518 - mean_squared_error: 0.1083 - val_loss: 0.6491 - val_mean_squared_error: 0.1114 - learning_rate: 1.0000e-05
+Epoch 8/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 153s 523ms/step - loss: 0.6380 - mean_squared_error: 0.1018 - val_loss: 0.6330 - val_mean_squared_error: 0.1035 - learning_rate: 1.0000e-05
+Epoch 9/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 143s 488ms/step - loss: 0.6223 - mean_squared_error: 0.0940 - val_loss: 0.6140 - val_mean_squared_error: 0.0941 - learning_rate: 1.0000e-05
+Epoch 10/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 474ms/step - loss: 0.6055 - mean_squared_error: 0.0856 - val_loss: 0.5990 - val_mean_squared_error: 0.0868 - learning_rate: 1.0000e-05
+Epoch 11/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 474ms/step - loss: 0.5873 - mean_squared_error: 0.0776 - val_loss: 0.5783 - val_mean_squared_error: 0.0768 - learning_rate: 1.0000e-05
+Epoch 12/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 472ms/step - loss: 0.5693 - mean_squared_error: 0.0687 - val_loss: 0.5591 - val_mean_squared_error: 0.0677 - learning_rate: 1.0000e-05
+Epoch 13/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 473ms/step - loss: 0.5517 - mean_squared_error: 0.0597 - val_loss: 0.5410 - val_mean_squared_error: 0.0591 - learning_rate: 1.0000e-05
+Epoch 14/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 145s 497ms/step - loss: 0.5337 - mean_squared_error: 0.0515 - val_loss: 0.5243 - val_mean_squared_error: 0.0514 - learning_rate: 1.0000e-05
+Epoch 15/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 142s 488ms/step - loss: 0.5173 - mean_squared_error: 0.0436 - val_loss: 0.5077 - val_mean_squared_error: 0.0438 - learning_rate: 1.0000e-05
+Epoch 16/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 145s 496ms/step - loss: 0.5011 - mean_squared_error: 0.0367 - val_loss: 0.4921 - val_mean_squared_error: 0.0369 - learning_rate: 1.0000e-05
+Epoch 17/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 146s 501ms/step - loss: 0.4868 - mean_squared_error: 0.0304 - val_loss: 0.4785 - val_mean_squared_error: 0.0311 - learning_rate: 1.0000e-05
+Epoch 18/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 142s 485ms/step - loss: 0.4738 - mean_squared_error: 0.0247 - val_loss: 0.4654 - val_mean_squared_error: 0.0256 - learning_rate: 1.0000e-05
+Epoch 19/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 472ms/step - loss: 0.4612 - mean_squared_error: 0.0201 - val_loss: 0.4515 - val_mean_squared_error: 0.0200 - learning_rate: 1.0000e-05
+Epoch 20/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 473ms/step - loss: 0.4499 - mean_squared_error: 0.0160 - val_loss: 0.4439 - val_mean_squared_error: 0.0171 - learning_rate: 1.0000e-05
+Epoch 21/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 137s 469ms/step - loss: 0.4414 - mean_squared_error: 0.0124 - val_loss: 0.4351 - val_mean_squared_error: 0.0137 - learning_rate: 1.0000e-05
+Epoch 22/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 137s 469ms/step - loss: 0.4354 - mean_squared_error: 0.0095 - val_loss: 0.4283 - val_mean_squared_error: 0.0112 - learning_rate: 1.0000e-05
+Epoch 23/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 472ms/step - loss: 0.4290 - mean_squared_error: 0.0071 - val_loss: 0.4227 - val_mean_squared_error: 0.0093 - learning_rate: 1.0000e-05
+Epoch 24/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 139s 477ms/step - loss: 0.4218 - mean_squared_error: 0.0056 - val_loss: 0.4174 - val_mean_squared_error: 0.0075 - learning_rate: 1.0000e-05
+Epoch 25/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 136s 466ms/step - loss: 0.4188 - mean_squared_error: 0.0041 - val_loss: 0.4146 - val_mean_squared_error: 0.0065 - learning_rate: 1.0000e-05
+Epoch 26/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 136s 467ms/step - loss: 0.4148 - mean_squared_error: 0.0032 - val_loss: 0.4108 - val_mean_squared_error: 0.0053 - learning_rate: 1.0000e-05
+Epoch 27/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 145s 496ms/step - loss: 0.4136 - mean_squared_error: 0.0025 - val_loss: 0.4082 - val_mean_squared_error: 0.0044 - learning_rate: 1.0000e-05
+Epoch 28/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 154s 527ms/step - loss: 0.4110 - mean_squared_error: 0.0019 - val_loss: 0.4063 - val_mean_squared_error: 0.0038 - learning_rate: 1.0000e-05
+Epoch 29/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 142s 487ms/step - loss: 0.4096 - mean_squared_error: 0.0016 - val_loss: 0.4058 - val_mean_squared_error: 0.0037 - learning_rate: 1.0000e-05
+Epoch 30/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 137s 470ms/step - loss: 0.4096 - mean_squared_error: 0.0013 - val_loss: 0.4050 - val_mean_squared_error: 0.0034 - learning_rate: 1.0000e-05
+Epoch 31/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 473ms/step - loss: 0.4102 - mean_squared_error: 0.0012 - val_loss: 0.4044 - val_mean_squared_error: 0.0033 - learning_rate: 1.0000e-05
+Epoch 32/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 474ms/step - loss: 0.4090 - mean_squared_error: 0.0011 - val_loss: 0.4040 - val_mean_squared_error: 0.0031 - learning_rate: 1.0000e-05
+Epoch 33/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 472ms/step - loss: 0.4087 - mean_squared_error: 0.0010 - val_loss: 0.4033 - val_mean_squared_error: 0.0029 - learning_rate: 1.0000e-05
+Epoch 34/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 472ms/step - loss: 0.4079 - mean_squared_error: 0.0010 - val_loss: 0.4037 - val_mean_squared_error: 0.0030 - learning_rate: 1.0000e-05
+Epoch 35/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 142s 485ms/step - loss: 0.4109 - mean_squared_error: 9.6707e-04 - val_loss: 0.4032 - val_mean_squared_error: 0.0029 - learning_rate: 1.0000e-05
+Epoch 36/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 153s 525ms/step - loss: 0.4092 - mean_squared_error: 9.3389e-04 - val_loss: 0.4035 - val_mean_squared_error: 0.0030 - learning_rate: 1.0000e-05
+Epoch 37/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 154s 529ms/step - loss: 0.4071 - mean_squared_error: 9.4938e-04 - val_loss: 0.4025 - val_mean_squared_error: 0.0027 - learning_rate: 1.0000e-05
+Epoch 38/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 143s 490ms/step - loss: 0.4065 - mean_squared_error: 9.0768e-04 - val_loss: 0.4027 - val_mean_squared_error: 0.0027 - learning_rate: 1.0000e-05
+Epoch 39/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 137s 470ms/step - loss: 0.4091 - mean_squared_error: 8.5881e-04 - val_loss: 0.4029 - val_mean_squared_error: 0.0028 - learning_rate: 1.0000e-05
+Epoch 40/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 137s 471ms/step - loss: 0.4084 - mean_squared_error: 8.5700e-04 - val_loss: 0.4027 - val_mean_squared_error: 0.0027 - learning_rate: 1.0000e-05
+Epoch 41/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 472ms/step - loss: 0.4080 - mean_squared_error: 8.3285e-04 - val_loss: 0.4026 - val_mean_squared_error: 0.0028 - learning_rate: 1.0000e-05
+Epoch 42/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 472ms/step - loss: 0.4066 - mean_squared_error: 8.5810e-04 - val_loss: 0.4024 - val_mean_squared_error: 0.0027 - learning_rate: 1.0000e-05
+Epoch 43/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 471ms/step - loss: 0.4102 - mean_squared_error: 8.3282e-04 - val_loss: 0.4024 - val_mean_squared_error: 0.0027 - learning_rate: 1.0000e-05
+Epoch 44/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 143s 490ms/step - loss: 0.4078 - mean_squared_error: 7.6995e-04 - val_loss: 0.4025 - val_mean_squared_error: 0.0027 - learning_rate: 1.0000e-05
+Epoch 45/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 150s 515ms/step - loss: 0.4082 - mean_squared_error: 7.7627e-04 - val_loss: 0.4023 - val_mean_squared_error: 0.0026 - learning_rate: 1.0000e-05
+Epoch 46/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 148s 507ms/step - loss: 0.4092 - mean_squared_error: 7.8152e-04 - val_loss: 0.4020 - val_mean_squared_error: 0.0026 - learning_rate: 1.0000e-05
+Epoch 47/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 144s 492ms/step - loss: 0.4082 - mean_squared_error: 7.3046e-04 - val_loss: 0.4020 - val_mean_squared_error: 0.0026 - learning_rate: 1.0000e-05
+Epoch 48/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 137s 469ms/step - loss: 0.4087 - mean_squared_error: 7.4382e-04 - val_loss: 0.4021 - val_mean_squared_error: 0.0026 - learning_rate: 1.0000e-05
+Epoch 49/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 137s 470ms/step - loss: 0.4066 - mean_squared_error: 7.5448e-04 - val_loss: 0.4021 - val_mean_squared_error: 0.0026 - learning_rate: 1.0000e-05
+Epoch 50/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 137s 470ms/step - loss: 0.4072 - mean_squared_error: 7.7316e-04 - val_loss: 0.4020 - val_mean_squared_error: 0.0026 - learning_rate: 1.0000e-05
+Epoch 51/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 473ms/step - loss: 0.4084 - mean_squared_error: 7.0784e-04 - val_loss: 0.4020 - val_mean_squared_error: 0.0025 - learning_rate: 1.0000e-05
+Epoch 52/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 471ms/step - loss: 0.4087 - mean_squared_error: 7.3632e-04 - val_loss: 0.4020 - val_mean_squared_error: 0.0026 - learning_rate: 1.0000e-05
+Epoch 53/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 142s 486ms/step - loss: 0.4063 - mean_squared_error: 7.1279e-04 - val_loss: 0.4020 - val_mean_squared_error: 0.0026 - learning_rate: 1.0000e-05
+Epoch 54/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 145s 497ms/step - loss: 0.4082 - mean_squared_error: 6.9338e-04 - val_loss: 0.4017 - val_mean_squared_error: 0.0025 - learning_rate: 1.0000e-05
+Epoch 55/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 149s 511ms/step - loss: 0.4068 - mean_squared_error: 6.9151e-04 - val_loss: 0.4017 - val_mean_squared_error: 0.0025 - learning_rate: 1.0000e-05
+Epoch 56/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 141s 484ms/step - loss: 0.4070 - mean_squared_error: 6.7310e-04 - val_loss: 0.4021 - val_mean_squared_error: 0.0026 - learning_rate: 1.0000e-05
+Epoch 57/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 137s 470ms/step - loss: 0.4069 - mean_squared_error: 6.8701e-04 - val_loss: 0.4019 - val_mean_squared_error: 0.0025 - learning_rate: 1.0000e-05
+Epoch 58/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 472ms/step - loss: 0.4067 - mean_squared_error: 7.1130e-04 - val_loss: 0.4019 - val_mean_squared_error: 0.0025 - learning_rate: 1.0000e-05
+Epoch 59/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 137s 469ms/step - loss: 0.4079 - mean_squared_error: 6.7344e-04 - val_loss: 0.4021 - val_mean_squared_error: 0.0026 - learning_rate: 1.0000e-05
+Epoch 60/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 137s 470ms/step - loss: 0.4085 - mean_squared_error: 6.8823e-04 - val_loss: 0.4016 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 61/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 472ms/step - loss: 0.4087 - mean_squared_error: 6.4379e-04 - val_loss: 0.4018 - val_mean_squared_error: 0.0025 - learning_rate: 1.0000e-05
+Epoch 62/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 139s 476ms/step - loss: 0.4060 - mean_squared_error: 6.5046e-04 - val_loss: 0.4017 - val_mean_squared_error: 0.0025 - learning_rate: 1.0000e-05
+Epoch 63/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 472ms/step - loss: 0.4051 - mean_squared_error: 6.1816e-04 - val_loss: 0.4016 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 64/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 136s 465ms/step - loss: 0.4089 - mean_squared_error: 6.1312e-04 - val_loss: 0.4016 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 65/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 142s 486ms/step - loss: 0.4068 - mean_squared_error: 6.4825e-04 - val_loss: 0.4014 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 66/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 151s 517ms/step - loss: 0.4057 - mean_squared_error: 6.1512e-04 - val_loss: 0.4015 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 67/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 155s 532ms/step - loss: 0.4075 - mean_squared_error: 6.2446e-04 - val_loss: 0.4015 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 68/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 136s 465ms/step - loss: 0.4074 - mean_squared_error: 5.9204e-04 - val_loss: 0.4014 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 69/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 136s 466ms/step - loss: 0.4068 - mean_squared_error: 6.0754e-04 - val_loss: 0.4015 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 70/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 472ms/step - loss: 0.4056 - mean_squared_error: 6.0360e-04 - val_loss: 0.4023 - val_mean_squared_error: 0.0027 - learning_rate: 1.0000e-05
+Epoch 71/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 139s 475ms/step - loss: 0.4064 - mean_squared_error: 6.0216e-04 - val_loss: 0.4016 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 72/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 136s 467ms/step - loss: 0.4074 - mean_squared_error: 5.6818e-04 - val_loss: 0.4013 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-05
+Epoch 73/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 137s 469ms/step - loss: 0.4077 - mean_squared_error: 5.8116e-04 - val_loss: 0.4015 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 74/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 146s 500ms/step - loss: 0.4056 - mean_squared_error: 5.9187e-04 - val_loss: 0.4013 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-05
+Epoch 75/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 150s 515ms/step - loss: 0.4066 - mean_squared_error: 5.6511e-04 - val_loss: 0.4013 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 76/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 147s 504ms/step - loss: 0.4078 - mean_squared_error: 5.5301e-04 - val_loss: 0.4015 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 77/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 472ms/step - loss: 0.4076 - mean_squared_error: 5.5795e-04 - val_loss: 0.4017 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 78/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 137s 470ms/step - loss: 0.4045 - mean_squared_error: 5.5711e-04 - val_loss: 0.4013 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-05
+Epoch 79/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 136s 465ms/step - loss: 0.4070 - mean_squared_error: 5.5179e-04 - val_loss: 0.4016 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 80/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 136s 465ms/step - loss: 0.4070 - mean_squared_error: 5.6309e-04 - val_loss: 0.4015 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 81/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 136s 466ms/step - loss: 0.4083 - mean_squared_error: 5.5748e-04 - val_loss: 0.4013 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-05
+Epoch 82/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 140s 480ms/step - loss: 0.4079 - mean_squared_error: 5.1798e-04 - val_loss: 0.4014 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 83/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 144s 494ms/step - loss: 0.4055 - mean_squared_error: 5.5006e-04 - val_loss: 0.4015 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 84/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 0s 508ms/step - loss: 0.4075 - mean_squared_error: 5.0081e-04
+Epoch 84: ReduceLROnPlateau reducing learning rate to 9.999999747378752e-07.
+292/292 ━━━━━━━━━━━━━━━━━━━━ 150s 513ms/step - loss: 0.4075 - mean_squared_error: 5.0092e-04 - val_loss: 0.4016 - val_mean_squared_error: 0.0024 - learning_rate: 1.0000e-05
+Epoch 85/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 144s 493ms/step - loss: 0.4071 - mean_squared_error: 5.4880e-04 - val_loss: 0.4013 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-06
+Epoch 86/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 474ms/step - loss: 0.4065 - mean_squared_error: 5.2907e-04 - val_loss: 0.4013 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-06
+Epoch 87/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 136s 466ms/step - loss: 0.4068 - mean_squared_error: 5.1186e-04 - val_loss: 0.4011 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-06
+Epoch 88/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 136s 465ms/step - loss: 0.4057 - mean_squared_error: 5.3199e-04 - val_loss: 0.4013 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-06
+Epoch 89/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 136s 466ms/step - loss: 0.4072 - mean_squared_error: 5.4235e-04 - val_loss: 0.4011 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-06
+Epoch 90/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 137s 469ms/step - loss: 0.4053 - mean_squared_error: 5.0030e-04 - val_loss: 0.4013 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-06
+Epoch 91/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 140s 480ms/step - loss: 0.4060 - mean_squared_error: 5.1027e-04 - val_loss: 0.4011 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-06
+Epoch 92/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 144s 493ms/step - loss: 0.4064 - mean_squared_error: 5.2571e-04 - val_loss: 0.4011 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-06
+Epoch 93/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 144s 493ms/step - loss: 0.4065 - mean_squared_error: 5.3916e-04 - val_loss: 0.4013 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-06
+Epoch 94/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 145s 497ms/step - loss: 0.4077 - mean_squared_error: 5.1107e-04 - val_loss: 0.4013 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-06
+Epoch 95/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 143s 490ms/step - loss: 0.4085 - mean_squared_error: 5.0312e-04 - val_loss: 0.4013 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-06
+Epoch 96/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 137s 470ms/step - loss: 0.4053 - mean_squared_error: 4.9508e-04 - val_loss: 0.4011 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-06
+Epoch 97/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 0s 467ms/step - loss: 0.4073 - mean_squared_error: 4.9562e-04
+Epoch 97: ReduceLROnPlateau reducing learning rate to 1e-07.
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 474ms/step - loss: 0.4073 - mean_squared_error: 4.9570e-04 - val_loss: 0.4010 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-06
+Epoch 98/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 139s 474ms/step - loss: 0.4071 - mean_squared_error: 5.2952e-04 - val_loss: 0.4010 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-07
+Epoch 99/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 474ms/step - loss: 0.4060 - mean_squared_error: 4.8378e-04 - val_loss: 0.4012 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-07
+Epoch 100/100
+292/292 ━━━━━━━━━━━━━━━━━━━━ 138s 474ms/step - loss: 0.4075 - mean_squared_error: 5.2382e-04 - val_loss: 0.4011 - val_mean_squared_error: 0.0023 - learning_rate: 1.0000e-07
+Restoring model weights from the end of the best epoch: 97.</code></pre>
+</div>
+</div></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [8]:</pre></div><div id="cell-10" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">## LOAD CHECKPOINTS IF NEEDED</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the model</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> load_model(<span class="st">'smogseer100.keras'</span>)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Run predictions on validation data</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>predictions <span class="op">=</span> model.predict(X_val)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluate the model on validation data</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>val_loss, val_accuracy <span class="op">=</span> model.evaluate(X_val, y_val)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Validation Loss: </span><span class="sc">{</span>val_loss<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Validation Accuracy: </span><span class="sc">{</span>val_accuracy<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>3/3 ━━━━━━━━━━━━━━━━━━━━ 6s 814ms/step
+3/3 ━━━━━━━━━━━━━━━━━━━━ 3s 456ms/step - loss: 0.4003 - mean_squared_error: 0.0019
+Validation Loss: 0.40102294087409973
+Validation Accuracy: 0.0022550118155777454</code></pre>
+</div>
+</div></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [9]:</pre></div><div id="cell-11" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot comparisons and training history</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_comparison(y_true, y_pred, index, save_path):</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="co">    Plots the ground truth and the predicted output for a given index.</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="co">    - y_true: Ground truth data</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="co">    - y_pred: Predicted data</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="co">    - index: Index of the sample to plot</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="co">    - save_path: Path to save the plot</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Plot ground truth</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> axes[<span class="dv">0</span>]</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>    ax.imshow(y_true[index, <span class="dv">0</span>, :, :, <span class="dv">0</span>], cmap<span class="op">=</span><span class="st">'viridis'</span>)</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="st">'Ground Truth'</span>)</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>    ax.axis(<span class="st">'off'</span>)</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Plot prediction</span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> axes[<span class="dv">1</span>]</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>    ax.imshow(y_pred[index, <span class="dv">0</span>, :, :, <span class="dv">0</span>], cmap<span class="op">=</span><span class="st">'viridis'</span>)</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="st">'Prediction'</span>)</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>    ax.axis(<span class="st">'off'</span>)</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>    plt.savefig(save_path)</span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>    plt.close()</span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize a few samples</span></span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>num_samples_to_plot <span class="op">=</span> <span class="dv">5</span></span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(num_samples_to_plot):</span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>    plot_comparison(y_val, predictions, i, <span class="ss">f'comparison_plot_100_</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">.png'</span>)</span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot training history</span></span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_training_history(history, save_path):</span>
+<span id="cb17-39"><a href="#cb17-39" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb17-40"><a href="#cb17-40" aria-hidden="true" tabindex="-1"></a><span class="co">    Plots the training and validation loss and accuracy over epochs.</span></span>
+<span id="cb17-41"><a href="#cb17-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-42"><a href="#cb17-42" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb17-43"><a href="#cb17-43" aria-hidden="true" tabindex="-1"></a><span class="co">    - history: Keras History object</span></span>
+<span id="cb17-44"><a href="#cb17-44" aria-hidden="true" tabindex="-1"></a><span class="co">    - save_path: Path to save the plot</span></span>
+<span id="cb17-45"><a href="#cb17-45" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb17-46"><a href="#cb17-46" aria-hidden="true" tabindex="-1"></a>    fig, (ax1, ax2) <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">14</span>, <span class="dv">6</span>))</span>
+<span id="cb17-47"><a href="#cb17-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-48"><a href="#cb17-48" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Plot loss</span></span>
+<span id="cb17-49"><a href="#cb17-49" aria-hidden="true" tabindex="-1"></a>    ax1.plot(history.history[<span class="st">'loss'</span>], label<span class="op">=</span><span class="st">'Training Loss'</span>)</span>
+<span id="cb17-50"><a href="#cb17-50" aria-hidden="true" tabindex="-1"></a>    ax1.plot(history.history[<span class="st">'val_loss'</span>], label<span class="op">=</span><span class="st">'Validation Loss'</span>)</span>
+<span id="cb17-51"><a href="#cb17-51" aria-hidden="true" tabindex="-1"></a>    ax1.set_title(<span class="st">'Loss over epochs'</span>)</span>
+<span id="cb17-52"><a href="#cb17-52" aria-hidden="true" tabindex="-1"></a>    ax1.set_xlabel(<span class="st">'Epoch'</span>)</span>
+<span id="cb17-53"><a href="#cb17-53" aria-hidden="true" tabindex="-1"></a>    ax1.set_ylabel(<span class="st">'Loss'</span>)</span>
+<span id="cb17-54"><a href="#cb17-54" aria-hidden="true" tabindex="-1"></a>    ax1.legend()</span>
+<span id="cb17-55"><a href="#cb17-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-56"><a href="#cb17-56" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Plot accuracy</span></span>
+<span id="cb17-57"><a href="#cb17-57" aria-hidden="true" tabindex="-1"></a>    ax2.plot(history.history[<span class="st">'mean_squared_error'</span>], label<span class="op">=</span><span class="st">'Training MSE'</span>)</span>
+<span id="cb17-58"><a href="#cb17-58" aria-hidden="true" tabindex="-1"></a>    ax2.plot(history.history[<span class="st">'val_mean_squared_error'</span>], label<span class="op">=</span><span class="st">'Validation MSE'</span>)</span>
+<span id="cb17-59"><a href="#cb17-59" aria-hidden="true" tabindex="-1"></a>    ax2.set_title(<span class="st">'MSE over epochs'</span>)</span>
+<span id="cb17-60"><a href="#cb17-60" aria-hidden="true" tabindex="-1"></a>    ax2.set_xlabel(<span class="st">'Epoch'</span>)</span>
+<span id="cb17-61"><a href="#cb17-61" aria-hidden="true" tabindex="-1"></a>    ax2.set_ylabel(<span class="st">'MSE'</span>)</span>
+<span id="cb17-62"><a href="#cb17-62" aria-hidden="true" tabindex="-1"></a>    ax2.legend()</span>
+<span id="cb17-63"><a href="#cb17-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-64"><a href="#cb17-64" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb17-65"><a href="#cb17-65" aria-hidden="true" tabindex="-1"></a>    plt.savefig(save_path)</span>
+<span id="cb17-66"><a href="#cb17-66" aria-hidden="true" tabindex="-1"></a>    plt.close()</span>
+<span id="cb17-67"><a href="#cb17-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-68"><a href="#cb17-68" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot training history</span></span>
+<span id="cb17-69"><a href="#cb17-69" aria-hidden="true" tabindex="-1"></a>plot_training_history(history, <span class="st">'training_history_epoch100.png'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div>
+     </main>
+<!-- /main column -->  <script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>  </div> <!-- /content -->  <script>var lightboxQuarto = GLightbox({"selector":".lightbox","closeEffect":"zoom","loop":false,"descPosition":"bottom","openEffect":"zoom"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script> 
+  
+</body></html>

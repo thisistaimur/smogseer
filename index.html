@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.55">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Taimur Khan">
+<meta name="dcterms.date" content="2024-07-28">
+<meta name="keywords" content="Air quality, Deep learning, Sentinel-5P">
+
+<title>Smogseer: A Convolutional LSTM model for forecasting air quality from Sentinel-5P data</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script async="" src="https://hypothes.is/embed.js"></script>
+<script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+<meta name="citation_title" content="Smogseer: A Convolutional LSTM model for forecasting air quality from Sentinel-5P data">
+<meta name="citation_abstract" content="The South Asian Smog denotes a recurring annual occurrence of heightened levels of air pollution marked by elevated levels of air contaminants, reduced visibility, and significant socio-economic impacts. These Extreme Smog Events predominantly occur in the northwestern regions of the Indo-Gangetic Plains (IGP) during the months from November to February. Since 2016, their frequency and pervasiveness have led to their colloquial local reference as &amp;amp;quot;the fifth season&quot;. Inhabitants of cities like Lahore, Amritsar, Faisalabad, Multan, and Delhi experience outbursts of extremely hazardous air quality levels during this period. In the last decade, there has been an increase in air pollution sources while crop residue burning, changing weather patterns, and motor vehicles have greatly contributed to the increased frequency and intensity of heightened smog events. However, forecasting of the Extreme Smog Events in South Asia remains elusive as monitoring efforts can help mobilise timely efforts to mitigate conditions that drive the smog. In this study, I use five-day air constituent data from Sentinel-5P level 2 remote sensing product predict hightened aerosol events using Convolutional Long-Short Term Memory neueral network model. The predictor for heightened smog is the UV (Ultraviolet) Aerosol Index at 340-380 nm. The results show that the Aerosol Index can be forecasted at a five-day interval with a Meas Squared Error of ~0.0018 and a loss of ~0.3995, indicating that while Smogseer can predict heightened smog events, the model can be further improved by incorporating additional data sources and refining the model architecture.
+">
+<meta name="citation_keywords" content="Air quality,Deep learning,Sentinel-5P">
+<meta name="citation_author" content="Taimur Khan">
+<meta name="citation_publication_date" content="2024-07-28">
+<meta name="citation_cover_date" content="2024-07-28">
+<meta name="citation_year" content="2024">
+<meta name="citation_online_date" content="2024-07-28">
+<meta name="citation_language" content="en">
+<meta name="citation_reference" content="citation_title=Convolutional LSTM network: A machine learning approach for precipitation nowcasting;,citation_author=Xingjian Shi;,citation_author=Zhourong Chen;,citation_author=Hao Wang;,citation_author=Dit-Yan Yeung;,citation_author=Wai-Kin Wong;,citation_author=Wang-chun Woo;,citation_publication_date=2015;,citation_cover_date=2015;,citation_year=2015;,citation_volume=28;,citation_journal_title=Advances in neural information processing systems;">
+<meta name="citation_reference" content="citation_title=Convcast: An embedded convolutional LSTM based architecture for precipitation nowcasting using satellite data;,citation_author=Ashutosh Kumar;,citation_author=Tanvir Islam;,citation_author=Yoshihide Sekimoto;,citation_author=Chris Mattmann;,citation_author=Brian Wilson;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_issue=3;,citation_volume=15;,citation_journal_title=Plos one;,citation_publisher=Public Library of Science San Francisco, CA USA;">
+<meta name="citation_reference" content="citation_title=Remembering history with convolutional lstm for anomaly detection;,citation_author=Weixin Luo;,citation_author=Wen Liu;,citation_author=Shenghua Gao;,citation_publication_date=2017;,citation_cover_date=2017;,citation_year=2017;,citation_conference_title=2017 IEEE international conference on multimedia and expo (ICME);,citation_conference=IEEE;">
+<meta name="citation_reference" content="citation_title=Keras;,citation_author=François Chollet;,citation_author=others;,citation_publication_date=2015;,citation_cover_date=2015;,citation_year=2015;,citation_publisher=https://keras.io;">
+<meta name="citation_reference" content="citation_title=Matplotlib: A 2D graphics environment;,citation_abstract=Matplotlib is a 2D graphics package used for Python for application development, interactive scripting, and publication-quality image generation across user interfaces and operating systems.;,citation_author=J. D. Hunter;,citation_publication_date=2007;,citation_cover_date=2007;,citation_year=2007;,citation_issue=3;,citation_doi=10.1109/MCSE.2007.55;,citation_volume=9;,citation_journal_title=Computing in Science &amp;amp;amp; Engineering;,citation_publisher=IEEE COMPUTER SOC;">
+<meta name="citation_reference" content="citation_title=Array programming with NumPy;,citation_author=Charles R. Harris;,citation_author=K. Jarrod Millman;,citation_author=Stéfan J. Walt;,citation_author=Ralf Gommers;,citation_author=Pauli Virtanen;,citation_author=David Cournapeau;,citation_author=Eric Wieser;,citation_author=Julian Taylor;,citation_author=Sebastian Berg;,citation_author=Nathaniel J. Smith;,citation_author=Robert Kern;,citation_author=Matti Picus;,citation_author=Stephan Hoyer;,citation_author=Marten H. Kerkwijk;,citation_author=Matthew Brett;,citation_author=Allan Haldane;,citation_author=Jaime Fernández Río;,citation_author=Mark Wiebe;,citation_author=Pearu Peterson;,citation_author=Pierre Gérard-Marchant;,citation_author=Kevin Sheppard;,citation_author=Tyler Reddy;,citation_author=Warren Weckesser;,citation_author=Hameer Abbasi;,citation_author=Christoph Gohlke;,citation_author=Travis E. Oliphant;,citation_publication_date=2020-09;,citation_cover_date=2020-09;,citation_year=2020;,citation_fulltext_html_url=https://doi.org/10.1038/s41586-020-2649-2;,citation_issue=7825;,citation_doi=10.1038/s41586-020-2649-2;,citation_volume=585;,citation_journal_title=Nature;,citation_publisher=Springer Science; Business Media LLC;">
+<meta name="citation_reference" content="citation_title=Solving the mysteries of lahore smog: The fifth season in the country;,citation_author=Rabia Majeed;,citation_author=Muhammad Shehzaib Anjum;,citation_author=Muhammad Imad-ud-din;,citation_author=Suhaib Malik;,citation_author=Muhammad Naveed Anwar;,citation_author=Bilal Anwar;,citation_author=Muhammad Fahim Khokhar;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_volume=5;,citation_journal_title=Frontiers in Sustainable Cities;,citation_publisher=Frontiers Media SA;">
+<meta name="citation_reference" content="citation_title=Copernicus sentinel-5P (processed by ESA), TROPOMI level 2 nitrogen dioxide total column products;,citation_author=undefined ESA;,citation_publication_date=2021;,citation_cover_date=2021;,citation_year=2021;,citation_fulltext_html_url=https://doi.org/10.5270/S5P-9bnp8q8;">
+<meta name="citation_reference" content="citation_title=DeepESDL-an open platform for research and collaboration in earth sciences;,citation_author=Alicja AND Fomferra Brandt;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_conference_title=EGU general assembly conference abstracts;">
+<meta name="citation_reference" content="citation_title=Smogseer: A convolutional LSTM for forecasting air quality metrics from sentinel-5P data;,citation_author=Taimur Khan;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_publisher=https://doi.org/10.5281/zenodo.13118498;">
+<meta name="citation_reference" content="citation_title=TensorFlow: Large-scale machine learning on heterogeneous systems;,citation_author=abadi AND Ashish agarwal AND Paul barham AND Eugene brevdo AND Zhifeng chen AND Craig citro AND Greg s. corrado AND Andy davis AND Jeffrey dean AND Matthieu devin AND Sanjay ghemawat AND Ian goodfellow AND Andrew harp AND Geoffrey irving AND Michael isard AND Yangqing Jia AND Rafal jozefowicz AND Lukasz kaiser AND Manjunath kudlur AND Josh levenberg AND Dandelion mané AND Rajat monga AND Sherry moore AND Derek murray AND Chris olah AND Mike schuster AND Jonathon shlens AND Benoit steiner AND Ilya sutskever AND Kunal talwar AND Paul tucker AND Vincent vanhoucke AND Vijay vasudevan AND Fernanda viégas AND Oriol vinyals AND Pete warden AND Martin wattenberg AND Martin wicke AND Yuan yu AND Xiaoqiang zheng Martin;,citation_publication_date=2015;,citation_cover_date=2015;,citation_year=2015;,citation_fulltext_html_url=https://www.tensorflow.org/;">
+</head>
+
+<body>
+
+<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Smogseer: A Convolutional LSTM model for forecasting air quality from Sentinel-5P data</h1>
+          </div>
+
+    
+    <div class="quarto-title-meta-container">
+      <div class="quarto-title-meta-column-start">
+            <div class="quarto-title-meta-author">
+          <div class="quarto-title-meta-heading">Author</div>
+          <div class="quarto-title-meta-heading">Affiliations</div>
+          
+                <div class="quarto-title-meta-contents">
+            <p class="author">Taimur Khan <a href="mailto:tq89iwow@studserv.uni-leipzig.de" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> <a href="https://orcid.org/0000-0001-7833-5474" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        Helmholtz Centre for Environmental Research - UFZ
+                      </p>
+                    <p class="affiliation">
+                        Leipzig University
+                      </p>
+                  </div>
+                    </div>
+        
+        <div class="quarto-title-meta">
+
+                      
+                <div>
+            <div class="quarto-title-meta-heading">Published</div>
+            <div class="quarto-title-meta-contents">
+              <p class="date">July 28, 2024</p>
+            </div>
+          </div>
+          
+                
+              </div>
+      </div>
+      <div class="quarto-title-meta-column-end quarto-other-formats-target">
+      </div>
+    </div>
+
+    <div>
+      <div class="abstract">
+        <div class="block-title">Abstract</div>
+        <p>The South Asian Smog denotes a recurring annual occurrence of heightened levels of air pollution marked by elevated levels of air contaminants, reduced visibility, and significant socio-economic impacts. These Extreme Smog Events predominantly occur in the northwestern regions of the Indo-Gangetic Plains (IGP) during the months from November to February. Since 2016, their frequency and pervasiveness have led to their colloquial local reference as “the fifth season”. Inhabitants of cities like Lahore, Amritsar, Faisalabad, Multan, and Delhi experience outbursts of extremely hazardous air quality levels during this period. In the last decade, there has been an increase in air pollution sources while crop residue burning, changing weather patterns, and motor vehicles have greatly contributed to the increased frequency and intensity of heightened smog events. However, forecasting of the Extreme Smog Events in South Asia remains elusive as monitoring efforts can help mobilise timely efforts to mitigate conditions that drive the smog. In this study, I use five-day air constituent data from Sentinel-5P level 2 remote sensing product predict hightened aerosol events using Convolutional Long-Short Term Memory neueral network model. The predictor for heightened smog is the UV (Ultraviolet) Aerosol Index at 340-380 nm. The results show that the Aerosol Index can be forecasted at a five-day interval with a Meas Squared Error of ~0.0018 and a loss of ~0.3995, indicating that while Smogseer can predict heightened smog events, the model can be further improved by incorporating additional data sources and refining the model architecture.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="keywords">
+        <div class="block-title">Keywords</div>
+        <p>Air quality, Deep learning, Sentinel-5P</p>
+      </div>
+    </div>
+
+    <div class="quarto-other-links-text-target">
+    <div class="quarto-code-links"><div class="quarto-title-meta-heading">Code Links</div><div class="quarto-title-meta-contents"><span style="padding-right: 0.5em;"><a href="src/data.py"><i class="bi bi-file-code"></i>data.py</a>,</span><span style="padding-right: 0.5em;"><a href="src/smogseer.py"><i class="bi bi-file-code"></i>smogseer.py</a>,</span><span><a href="src/utils.py"><i class="bi bi-file-code"></i>utils.py</a></span></div></div></div>  </div>
+</header><div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> Introduction</a></li>
+  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data"><span class="header-section-number">2</span> Data</a>
+  <ul class="collapse">
+  <li><a href="#predictor-variables-features" id="toc-predictor-variables-features" class="nav-link" data-scroll-target="#predictor-variables-features"><span class="header-section-number">2.1</span> Predictor variables (features)</a>
+  <ul class="collapse">
+  <li><a href="#methane-ch4" id="toc-methane-ch4" class="nav-link" data-scroll-target="#methane-ch4"><span class="header-section-number">2.1.1</span> Methane – CH4</a></li>
+  <li><a href="#ozone-o3" id="toc-ozone-o3" class="nav-link" data-scroll-target="#ozone-o3"><span class="header-section-number">2.1.2</span> Ozone – O3</a></li>
+  <li><a href="#sulphur-dioxide-so2" id="toc-sulphur-dioxide-so2" class="nav-link" data-scroll-target="#sulphur-dioxide-so2"><span class="header-section-number">2.1.3</span> Sulphur Dioxide – SO2</a></li>
+  <li><a href="#carbon-monoxide-co" id="toc-carbon-monoxide-co" class="nav-link" data-scroll-target="#carbon-monoxide-co"><span class="header-section-number">2.1.4</span> Carbon Monoxide – CO</a></li>
+  <li><a href="#nitrogen-dioxide-no2" id="toc-nitrogen-dioxide-no2" class="nav-link" data-scroll-target="#nitrogen-dioxide-no2"><span class="header-section-number">2.1.5</span> Nitrogen Dioxide – NO2</a></li>
+  <li><a href="#formaldehyde-hcho" id="toc-formaldehyde-hcho" class="nav-link" data-scroll-target="#formaldehyde-hcho"><span class="header-section-number">2.1.6</span> Formaldehyde – HCHO</a></li>
+  </ul></li>
+  <li><a href="#target-variable" id="toc-target-variable" class="nav-link" data-scroll-target="#target-variable"><span class="header-section-number">2.2</span> Target variable</a>
+  <ul class="collapse">
+  <li><a href="#aerosol-index-ai-340-380-nm" id="toc-aerosol-index-ai-340-380-nm" class="nav-link" data-scroll-target="#aerosol-index-ai-340-380-nm"><span class="header-section-number">2.2.1</span> Aerosol Index – AI (340-380 nm)</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#model-training" id="toc-model-training" class="nav-link" data-scroll-target="#model-training"><span class="header-section-number">3</span> Model Training</a>
+  <ul class="collapse">
+  <li><a href="#model-workflow" id="toc-model-workflow" class="nav-link" data-scroll-target="#model-workflow"><span class="header-section-number">3.1</span> Model Workflow</a></li>
+  </ul></li>
+  <li><a href="#evaluation" id="toc-evaluation" class="nav-link" data-scroll-target="#evaluation"><span class="header-section-number">4</span> Evaluation</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">5</span> Conclusion</a>
+  <ul class="collapse">
+  <li><a href="#loss-over-epochs" id="toc-loss-over-epochs" class="nav-link" data-scroll-target="#loss-over-epochs"><span class="header-section-number">5.1</span> Loss over Epochs</a></li>
+  <li><a href="#mse-over-epochs" id="toc-mse-over-epochs" class="nav-link" data-scroll-target="#mse-over-epochs"><span class="header-section-number">5.2</span> MSE over Epochs</a></li>
+  <li><a href="#key-observations" id="toc-key-observations" class="nav-link" data-scroll-target="#key-observations"><span class="header-section-number">5.3</span> Key Observations</a></li>
+  <li><a href="#recommendations" id="toc-recommendations" class="nav-link" data-scroll-target="#recommendations"><span class="header-section-number">5.4</span> Recommendations</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">6</span> References</a></li>
+  </ul>
+<div class="quarto-alternate-notebooks"><h2>Notebooks</h2><ul><li><a href="submission-preview.html"><i class="bi bi-journal-code"></i>Article Notebook</a></li><li><a href="notebooks/deepesdl-S5PL2-preview.html"><i class="bi bi-journal-code"></i>deepesdl-S5PL2.ipynb</a></li><li><a href="notebooks/smogseer100-preview.html"><i class="bi bi-journal-code"></i>smogseer100.ipynb</a></li><li><a href="notebooks/smogseer50-preview.html"><i class="bi bi-journal-code"></i>smogseer50.ipynb</a></li></ul></div></nav>
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+</div>
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+  
+
+
+<section id="introduction" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
+<p>Convincing evidence has shown that air pollution is a major environmental risk to health. The World Health Organization (WHO) estimates that 4.2 million premature deaths occur each year due to outdoor air pollution (<span class="citation" data-cites="majeed2024solving">Majeed et al. (<a href="#ref-majeed2024solving" role="doc-biblioref">2024</a>)</span>). In South Asia, air pollution is a major public health concern, with high levels of particulate matter (PM2.5) and other pollutants (<span class="citation" data-cites="majeed2024solving">Majeed et al. (<a href="#ref-majeed2024solving" role="doc-biblioref">2024</a>)</span>). Monitoring air quality is essential for public health and environmental protection. Satellites provide a valuable tool for monitoring air quality, as they can measure pollutants such as methane (CH4), nitrogen dioxide (NO2), sulfur dioxide (SO2), carbon monoxide (CO), Formaldehyde (HCHO), and ozone (O3) from space. Using these variables,the Sentinel-5P product also calculates the Aerosol Index (AI) which is a measure of the amount of aerosols in the atmosphere. The AI is used to monitor air quality and can be used to forecast air quality events such as smog. The aerosol index (AI) is a measure of the amount of aerosols in the atmosphere and is used to monitor air quality. The AI data from the Sentinel-5P satellite is available in near real-time and can be used to monitor air quality (<span class="citation" data-cites="Sentinel">ESA (<a href="#ref-Sentinel" role="doc-biblioref">2021</a>)</span>).</p>
+<p>In this project, we will use a convolutional LSTM neural network to forecast the AI in South Asia. The goal of this project is to develop a model that can accurately predict the AI in the future and help in monitoring air quality. The convolutional LSTM neural network is a class of neural networks that is used for spatio-temporal data (<span class="citation" data-cites="shi2015convolutional">Shi et al. (<a href="#ref-shi2015convolutional" role="doc-biblioref">2015</a>)</span>). It combines the spatial information from convolutional layers with the temporal information from LSTM layers. The convolutional LSTM neural network has been shown to be effective for predicting spatio-temporal data such as weather forecasting (<span class="citation" data-cites="kumar2020convcast">Kumar et al. (<a href="#ref-kumar2020convcast" role="doc-biblioref">2020</a>)</span>) and anomaly detection (<span class="citation" data-cites="luo2017remembering">Luo, Liu, and Gao (<a href="#ref-luo2017remembering" role="doc-biblioref">2017</a>)</span>).</p>
+<p>The goal of this project is to develop a model that can accurately forecast the AI in the future and help in monitoring air quality.</p>
+</section>
+<section id="data" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Data</h1>
+<p>An arbitary study area was chosen which confined to bounding box covering northern regions of South Asia as these regions continuosly experience some of world’s worst air quality (<span class="citation" data-cites="majeed2024solving">Majeed et al. (<a href="#ref-majeed2024solving" role="doc-biblioref">2024</a>)</span>). The bounding box coordinates were:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>bbox <span class="op">=</span> [<span class="fl">68.137207</span>,<span class="fl">24.886436</span>,<span class="fl">84.836426</span>,<span class="fl">34.379713</span>] <span class="co">#WGS84 // lon,lat,lon,lat</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For the study area abive, the corresponding Sentinel-5P data was downloaded using the Deep Earth System Data Lab’s <a href="https://deepesdl.readthedocs.io/en/latest/datasets/ESDC/">xcube sentinel datatore</a> (<span class="citation" data-cites="Brandt:2023">Brandt (<a href="#ref-Brandt:2023" role="doc-biblioref">2023</a>)</span>). The attached notebook titled <code>deepesdl-S5PL2.ipynb</code> can be viewed to see how this works. ALternative, the attached script titled <code>data.py</code> as a Code Link in this manuscript document can also be used to download the raw data.</p>
+<p>However, for ease, the downloaded version resulting file can be found on Zenodo (<span class="citation" data-cites="khan2024smogseer">Khan (<a href="#ref-khan2024smogseer" role="doc-biblioref">2024</a>)</span>).</p>
+<p>The <strong>timeperiod</strong> for the study was chosen from <strong>01.01.2019</strong> to <strong>31.12.2023</strong>. The data was downloaded from the Sentinel-5P data store using the Deep Earth System Data Lab’s <a href="https://deepesdl.readthedocs.io/en/latest/datasets/ESDC/">xcube sentinel datatore</a> (<span class="citation" data-cites="Brandt:2023">Brandt (<a href="#ref-Brandt:2023" role="doc-biblioref">2023</a>)</span>). The data was downloaded in the form of netCDF files which contain the AI data for the study area and time period. The data was then preprocessed and split into training and testing datasets. The training dataset contains the AI data from <strong>01.01.2019</strong> to <strong>31.02.2022</strong> and the testing dataset contains the AI data from <strong>01.01.2023</strong> to <strong>31.12.2023</strong>.</p>
+<p>The <strong>spatial resolution</strong> of the data is 3.629km x 3.269km per pixel.</p>
+<p>Here is the resulting dataset:</p>
+<div id="cell-6" class="cell" data-execution_count="2">
+<div class="cell-output cell-output-display" data-execution_count="2">
+<div><svg style="position: absolute; width: 0; height: 0; overflow: hidden">
+<defs>
+<symbol id="icon-database" viewbox="0 0 32 32">
+<path d="M16 0c-8.837 0-16 2.239-16 5v4c0 2.761 7.163 5 16 5s16-2.239 16-5v-4c0-2.761-7.163-5-16-5z"></path>
+<path d="M16 17c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
+<path d="M16 26c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
+</symbol>
+<symbol id="icon-file-text2" viewbox="0 0 32 32">
+<path d="M28.681 7.159c-0.694-0.947-1.662-2.053-2.724-3.116s-2.169-2.030-3.116-2.724c-1.612-1.182-2.393-1.319-2.841-1.319h-15.5c-1.378 0-2.5 1.121-2.5 2.5v27c0 1.378 1.122 2.5 2.5 2.5h23c1.378 0 2.5-1.122 2.5-2.5v-19.5c0-0.448-0.137-1.23-1.319-2.841zM24.543 5.457c0.959 0.959 1.712 1.825 2.268 2.543h-4.811v-4.811c0.718 0.556 1.584 1.309 2.543 2.268zM28 29.5c0 0.271-0.229 0.5-0.5 0.5h-23c-0.271 0-0.5-0.229-0.5-0.5v-27c0-0.271 0.229-0.5 0.5-0.5 0 0 15.499-0 15.5 0v7c0 0.552 0.448 1 1 1h7v19.5z"></path>
+<path d="M23 26h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+<path d="M23 22h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+<path d="M23 18h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+</symbol>
+</defs>
+</svg>
+<style>/* CSS stylesheet for displaying xarray objects in jupyterlab.
+ *
+ */
+
+:root {
+  --xr-font-color0: var(--jp-content-font-color0, rgba(0, 0, 0, 1));
+  --xr-font-color2: var(--jp-content-font-color2, rgba(0, 0, 0, 0.54));
+  --xr-font-color3: var(--jp-content-font-color3, rgba(0, 0, 0, 0.38));
+  --xr-border-color: var(--jp-border-color2, #e0e0e0);
+  --xr-disabled-color: var(--jp-layout-color3, #bdbdbd);
+  --xr-background-color: var(--jp-layout-color0, white);
+  --xr-background-color-row-even: var(--jp-layout-color1, white);
+  --xr-background-color-row-odd: var(--jp-layout-color2, #eeeeee);
+}
+
+html[theme=dark],
+body[data-theme=dark],
+body.vscode-dark {
+  --xr-font-color0: rgba(255, 255, 255, 1);
+  --xr-font-color2: rgba(255, 255, 255, 0.54);
+  --xr-font-color3: rgba(255, 255, 255, 0.38);
+  --xr-border-color: #1F1F1F;
+  --xr-disabled-color: #515151;
+  --xr-background-color: #111111;
+  --xr-background-color-row-even: #111111;
+  --xr-background-color-row-odd: #313131;
+}
+
+.xr-wrap {
+  display: block !important;
+  min-width: 300px;
+  max-width: 700px;
+}
+
+.xr-text-repr-fallback {
+  /* fallback to plain text repr when CSS is not injected (untrusted notebook) */
+  display: none;
+}
+
+.xr-header {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+  border-bottom: solid 1px var(--xr-border-color);
+}
+
+.xr-header > div,
+.xr-header > ul {
+  display: inline;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.xr-obj-type,
+.xr-array-name {
+  margin-left: 2px;
+  margin-right: 10px;
+}
+
+.xr-obj-type {
+  color: var(--xr-font-color2);
+}
+
+.xr-sections {
+  padding-left: 0 !important;
+  display: grid;
+  grid-template-columns: 150px auto auto 1fr 20px 20px;
+}
+
+.xr-section-item {
+  display: contents;
+}
+
+.xr-section-item input {
+  display: none;
+}
+
+.xr-section-item input + label {
+  color: var(--xr-disabled-color);
+}
+
+.xr-section-item input:enabled + label {
+  cursor: pointer;
+  color: var(--xr-font-color2);
+}
+
+.xr-section-item input:enabled + label:hover {
+  color: var(--xr-font-color0);
+}
+
+.xr-section-summary {
+  grid-column: 1;
+  color: var(--xr-font-color2);
+  font-weight: 500;
+}
+
+.xr-section-summary > span {
+  display: inline-block;
+  padding-left: 0.5em;
+}
+
+.xr-section-summary-in:disabled + label {
+  color: var(--xr-font-color2);
+}
+
+.xr-section-summary-in + label:before {
+  display: inline-block;
+  content: '►';
+  font-size: 11px;
+  width: 15px;
+  text-align: center;
+}
+
+.xr-section-summary-in:disabled + label:before {
+  color: var(--xr-disabled-color);
+}
+
+.xr-section-summary-in:checked + label:before {
+  content: '▼';
+}
+
+.xr-section-summary-in:checked + label > span {
+  display: none;
+}
+
+.xr-section-summary,
+.xr-section-inline-details {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.xr-section-inline-details {
+  grid-column: 2 / -1;
+}
+
+.xr-section-details {
+  display: none;
+  grid-column: 1 / -1;
+  margin-bottom: 5px;
+}
+
+.xr-section-summary-in:checked ~ .xr-section-details {
+  display: contents;
+}
+
+.xr-array-wrap {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 20px auto;
+}
+
+.xr-array-wrap > label {
+  grid-column: 1;
+  vertical-align: top;
+}
+
+.xr-preview {
+  color: var(--xr-font-color3);
+}
+
+.xr-array-preview,
+.xr-array-data {
+  padding: 0 5px !important;
+  grid-column: 2;
+}
+
+.xr-array-data,
+.xr-array-in:checked ~ .xr-array-preview {
+  display: none;
+}
+
+.xr-array-in:checked ~ .xr-array-data,
+.xr-array-preview {
+  display: inline-block;
+}
+
+.xr-dim-list {
+  display: inline-block !important;
+  list-style: none;
+  padding: 0 !important;
+  margin: 0;
+}
+
+.xr-dim-list li {
+  display: inline-block;
+  padding: 0;
+  margin: 0;
+}
+
+.xr-dim-list:before {
+  content: '(';
+}
+
+.xr-dim-list:after {
+  content: ')';
+}
+
+.xr-dim-list li:not(:last-child):after {
+  content: ',';
+  padding-right: 5px;
+}
+
+.xr-has-index {
+  font-weight: bold;
+}
+
+.xr-var-list,
+.xr-var-item {
+  display: contents;
+}
+
+.xr-var-item > div,
+.xr-var-item label,
+.xr-var-item > .xr-var-name span {
+  background-color: var(--xr-background-color-row-even);
+  margin-bottom: 0;
+}
+
+.xr-var-item > .xr-var-name:hover span {
+  padding-right: 5px;
+}
+
+.xr-var-list > li:nth-child(odd) > div,
+.xr-var-list > li:nth-child(odd) > label,
+.xr-var-list > li:nth-child(odd) > .xr-var-name span {
+  background-color: var(--xr-background-color-row-odd);
+}
+
+.xr-var-name {
+  grid-column: 1;
+}
+
+.xr-var-dims {
+  grid-column: 2;
+}
+
+.xr-var-dtype {
+  grid-column: 3;
+  text-align: right;
+  color: var(--xr-font-color2);
+}
+
+.xr-var-preview {
+  grid-column: 4;
+}
+
+.xr-index-preview {
+  grid-column: 2 / 5;
+  color: var(--xr-font-color2);
+}
+
+.xr-var-name,
+.xr-var-dims,
+.xr-var-dtype,
+.xr-preview,
+.xr-attrs dt {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 10px;
+}
+
+.xr-var-name:hover,
+.xr-var-dims:hover,
+.xr-var-dtype:hover,
+.xr-attrs dt:hover {
+  overflow: visible;
+  width: auto;
+  z-index: 1;
+}
+
+.xr-var-attrs,
+.xr-var-data,
+.xr-index-data {
+  display: none;
+  background-color: var(--xr-background-color) !important;
+  padding-bottom: 5px !important;
+}
+
+.xr-var-attrs-in:checked ~ .xr-var-attrs,
+.xr-var-data-in:checked ~ .xr-var-data,
+.xr-index-data-in:checked ~ .xr-index-data {
+  display: block;
+}
+
+.xr-var-data > table {
+  float: right;
+}
+
+.xr-var-name span,
+.xr-var-data,
+.xr-index-name div,
+.xr-index-data,
+.xr-attrs {
+  padding-left: 25px !important;
+}
+
+.xr-attrs,
+.xr-var-attrs,
+.xr-var-data,
+.xr-index-data {
+  grid-column: 1 / -1;
+}
+
+dl.xr-attrs {
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 125px auto;
+}
+
+.xr-attrs dt,
+.xr-attrs dd {
+  padding: 0;
+  margin: 0;
+  float: left;
+  padding-right: 10px;
+  width: auto;
+}
+
+.xr-attrs dt {
+  font-weight: normal;
+  grid-column: 1;
+}
+
+.xr-attrs dt:hover span {
+  display: inline-block;
+  background: var(--xr-background-color);
+  padding-right: 10px;
+}
+
+.xr-attrs dd {
+  grid-column: 2;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.xr-icon-database,
+.xr-icon-file-text2,
+.xr-no-icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 1em;
+  height: 1.5em !important;
+  stroke-width: 0;
+  stroke: currentColor;
+  fill: currentColor;
+}
+</style><pre class="xr-text-repr-fallback">&lt;xarray.Dataset&gt; Size: 2GB
+Dimensions:         (time: 366, lat: 291, lon: 512, bnds: 2)
+Coordinates:
+  * lat             (lat) float64 2kB 34.36 34.33 34.3 ... 24.97 24.94 24.9
+  * lon             (lon) float64 4kB 68.15 68.19 68.22 ... 84.75 84.79 84.82
+  * time            (time) datetime64[ns] 3kB 2019-01-03T12:00:00 ... 2024-01...
+    time_bnds       (time, bnds) datetime64[ns] 6kB ...
+Dimensions without coordinates: bnds
+Data variables:
+    AER_AI_340_380  (time, lat, lon) float32 218MB ...
+    AER_AI_354_388  (time, lat, lon) float32 218MB ...
+    CH4             (time, lat, lon) float32 218MB ...
+    CLOUD_FRACTION  (time, lat, lon) float32 218MB ...
+    CO              (time, lat, lon) float32 218MB ...
+    HCHO            (time, lat, lon) float32 218MB ...
+    NO2             (time, lat, lon) float32 218MB ...
+    O3              (time, lat, lon) float32 218MB ...
+    SO2             (time, lat, lon) float32 218MB ...
+Attributes:
+    Conventions:               CF-1.7
+    title:                     S5PL2 Data Cube Subset
+    history:                   [{'program': 'xcube_sh.chunkstore.SentinelHubC...
+    date_created:              2024-05-02T13:00:01.155492
+    time_coverage_start:       2019-01-01T00:00:00+00:00
+    time_coverage_end:         2024-01-05T00:00:00+00:00
+    time_coverage_duration:    P1830DT0H0M0S
+    time_coverage_resolution:  P5DT0H0M0S
+    geospatial_lon_min:        68.137207
+    geospatial_lat_min:        24.886436
+    geospatial_lon_max:        84.836426
+    geospatial_lat_max:        34.37759367382812</pre><div class="xr-wrap" style="display:none"><div class="xr-header"><div class="xr-obj-type">xarray.Dataset</div></div><ul class="xr-sections"><li class="xr-section-item"><input id="section-46cd0393-8957-49be-b4fe-56c1f3fb4fa1" class="xr-section-summary-in" type="checkbox" disabled=""><label for="section-46cd0393-8957-49be-b4fe-56c1f3fb4fa1" class="xr-section-summary" title="Expand/collapse section">Dimensions:</label><div class="xr-section-inline-details"><ul class="xr-dim-list"><li><span class="xr-has-index">time</span>: 366</li><li><span class="xr-has-index">lat</span>: 291</li><li><span class="xr-has-index">lon</span>: 512</li><li><span>bnds</span>: 2</li></ul></div><div class="xr-section-details"></div></li><li class="xr-section-item"><input id="section-1873ddc3-1e8b-4977-8c3a-c6f928de29cc" class="xr-section-summary-in" type="checkbox" checked=""><label for="section-1873ddc3-1e8b-4977-8c3a-c6f928de29cc" class="xr-section-summary">Coordinates: <span>(4)</span></label><div class="xr-section-inline-details"></div><div class="xr-section-details"><ul class="xr-var-list"><li class="xr-var-item"><div class="xr-var-name"><span class="xr-has-index">lat</span></div><div class="xr-var-dims">(lat)</div><div class="xr-var-dtype">float64</div><div class="xr-var-preview xr-preview">34.36 34.33 34.3 ... 24.94 24.9</div><input id="attrs-383dab27-68de-43e9-bb15-74891a0c4433" class="xr-var-attrs-in" type="checkbox"><label for="attrs-383dab27-68de-43e9-bb15-74891a0c4433" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-9aeeab2e-6dcc-4426-94df-fe82b96dab01" class="xr-var-data-in" type="checkbox"><label for="data-9aeeab2e-6dcc-4426-94df-fe82b96dab01" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>units :</span></dt><dd>decimal_degrees</dd><dt><span>long_name :</span></dt><dd>latitude</dd><dt><span>standard_name :</span></dt><dd>latitude</dd></dl></div><div class="xr-var-data"><pre>array([34.361286, 34.32867 , 34.296055, ..., 24.967975, 24.935359, 24.902744])</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span class="xr-has-index">lon</span></div><div class="xr-var-dims">(lon)</div><div class="xr-var-dtype">float64</div><div class="xr-var-preview xr-preview">68.15 68.19 68.22 ... 84.79 84.82</div><input id="attrs-958fbf5b-3f0e-4515-a2f9-7d86dfd5a595" class="xr-var-attrs-in" type="checkbox"><label for="attrs-958fbf5b-3f0e-4515-a2f9-7d86dfd5a595" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-654d857b-58c7-439e-9705-c1b9cac2e49d" class="xr-var-data-in" type="checkbox"><label for="data-654d857b-58c7-439e-9705-c1b9cac2e49d" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>units :</span></dt><dd>decimal_degrees</dd><dt><span>long_name :</span></dt><dd>longitude</dd><dt><span>standard_name :</span></dt><dd>longitude</dd></dl></div><div class="xr-var-data"><pre>array([68.153515, 68.18613 , 68.218746, ..., 84.754887, 84.787503, 84.820118])</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span class="xr-has-index">time</span></div><div class="xr-var-dims">(time)</div><div class="xr-var-dtype">datetime64[ns]</div><div class="xr-var-preview xr-preview">2019-01-03T12:00:00 ... 2024-01-...</div><input id="attrs-5041e548-d6bc-4657-991c-c1cc36f6382c" class="xr-var-attrs-in" type="checkbox"><label for="attrs-5041e548-d6bc-4657-991c-c1cc36f6382c" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-8eb27dc7-b017-4933-85f2-7bc02eb43a8a" class="xr-var-data-in" type="checkbox"><label for="data-8eb27dc7-b017-4933-85f2-7bc02eb43a8a" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>standard_name :</span></dt><dd>time</dd><dt><span>bounds :</span></dt><dd>time_bnds</dd></dl></div><div class="xr-var-data"><pre>array(['2019-01-03T12:00:00.000000000', '2019-01-08T12:00:00.000000000',
+       '2019-01-13T12:00:00.000000000', ..., '2023-12-23T12:00:00.000000000',
+       '2023-12-28T12:00:00.000000000', '2024-01-02T12:00:00.000000000'],
+      dtype='datetime64[ns]')</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>time_bnds</span></div><div class="xr-var-dims">(time, bnds)</div><div class="xr-var-dtype">datetime64[ns]</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-7d76ea20-1be1-43b1-a5dd-2e3d49a7b55d" class="xr-var-attrs-in" type="checkbox" disabled=""><label for="attrs-7d76ea20-1be1-43b1-a5dd-2e3d49a7b55d" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-11498161-9204-4f06-ae97-6cc1a09b2d43" class="xr-var-data-in" type="checkbox"><label for="data-11498161-9204-4f06-ae97-6cc1a09b2d43" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"></dl></div><div class="xr-var-data"><pre>[732 values with dtype=datetime64[ns]]</pre></div></li></ul></div></li><li class="xr-section-item"><input id="section-309e9938-c905-46c9-b6a8-d453013628ec" class="xr-section-summary-in" type="checkbox" checked=""><label for="section-309e9938-c905-46c9-b6a8-d453013628ec" class="xr-section-summary">Data variables: <span>(9)</span></label><div class="xr-section-inline-details"></div><div class="xr-section-details"><ul class="xr-var-list"><li class="xr-var-item"><div class="xr-var-name"><span>AER_AI_340_380</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-b2b5e623-d4cb-4808-83ff-800a6273a989" class="xr-var-attrs-in" type="checkbox"><label for="attrs-b2b5e623-d4cb-4808-83ff-800a6273a989" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-4752bd83-57e6-461e-b406-60e527070197" class="xr-var-data-in" type="checkbox"><label for="data-4752bd83-57e6-461e-b406-60e527070197" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>Unitless</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>AER_AI_354_388</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-f8cb86ed-3135-4ac8-b9ce-984e5ba0d93f" class="xr-var-attrs-in" type="checkbox"><label for="attrs-f8cb86ed-3135-4ac8-b9ce-984e5ba0d93f" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-5349665e-884e-41d2-9002-28a8ede62bbd" class="xr-var-data-in" type="checkbox"><label for="data-5349665e-884e-41d2-9002-28a8ede62bbd" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>Unitless</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>CH4</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-37989f4b-9195-4b3a-aa08-e567c6006a07" class="xr-var-attrs-in" type="checkbox"><label for="attrs-37989f4b-9195-4b3a-aa08-e567c6006a07" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-eb7e8d1c-6bc8-4004-b04f-b813e0a76fc6" class="xr-var-data-in" type="checkbox"><label for="data-eb7e8d1c-6bc8-4004-b04f-b813e0a76fc6" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>parts per billion</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>CLOUD_FRACTION</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-2663f935-8e50-402e-a3cd-051b0069e618" class="xr-var-attrs-in" type="checkbox"><label for="attrs-2663f935-8e50-402e-a3cd-051b0069e618" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-50964084-8518-4d3f-a711-d8c04c089072" class="xr-var-data-in" type="checkbox"><label for="data-50964084-8518-4d3f-a711-d8c04c089072" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>Unitless</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>CO</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-d30b676d-72b0-4cb2-ace5-eb7a8f245e01" class="xr-var-attrs-in" type="checkbox"><label for="attrs-d30b676d-72b0-4cb2-ace5-eb7a8f245e01" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-a19858e5-4ecf-4038-ab08-1bc347fcf4ee" class="xr-var-data-in" type="checkbox"><label for="data-a19858e5-4ecf-4038-ab08-1bc347fcf4ee" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>mol/m^2</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>HCHO</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-c1116b7f-6a07-45a9-9dbb-9cac356af916" class="xr-var-attrs-in" type="checkbox"><label for="attrs-c1116b7f-6a07-45a9-9dbb-9cac356af916" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-2c714e42-cdc3-4503-a1b4-9e09e086148f" class="xr-var-data-in" type="checkbox"><label for="data-2c714e42-cdc3-4503-a1b4-9e09e086148f" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>mol/m^2</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>NO2</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-4abe8004-6a4b-4306-bfa7-7dbf9c709d55" class="xr-var-attrs-in" type="checkbox"><label for="attrs-4abe8004-6a4b-4306-bfa7-7dbf9c709d55" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-03a38d47-0e19-4394-a5aa-30719575ef35" class="xr-var-data-in" type="checkbox"><label for="data-03a38d47-0e19-4394-a5aa-30719575ef35" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>mol/m^2</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>O3</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-529d68d9-a42d-4093-a070-d2726bf9e630" class="xr-var-attrs-in" type="checkbox"><label for="attrs-529d68d9-a42d-4093-a070-d2726bf9e630" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-9fd469b8-0214-482b-8f31-8ce0a0b7f019" class="xr-var-data-in" type="checkbox"><label for="data-9fd469b8-0214-482b-8f31-8ce0a0b7f019" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>mol/m^2</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li><li class="xr-var-item"><div class="xr-var-name"><span>SO2</span></div><div class="xr-var-dims">(time, lat, lon)</div><div class="xr-var-dtype">float32</div><div class="xr-var-preview xr-preview">...</div><input id="attrs-d2c1b02c-83a9-445e-a6ac-107f067db34d" class="xr-var-attrs-in" type="checkbox"><label for="attrs-d2c1b02c-83a9-445e-a6ac-107f067db34d" title="Show/Hide attributes"><svg class="icon xr-icon-file-text2"><use href="#icon-file-text2"></use></svg></label><input id="data-a98a39e3-adfb-4a77-b3a9-577064e071a1" class="xr-var-data-in" type="checkbox"><label for="data-a98a39e3-adfb-4a77-b3a9-577064e071a1" title="Show/Hide data repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-var-attrs"><dl class="xr-attrs"><dt><span>sample_type :</span></dt><dd>FLOAT32</dd><dt><span>units :</span></dt><dd>mol/m^2</dd></dl></div><div class="xr-var-data"><pre>[54531072 values with dtype=float32]</pre></div></li></ul></div></li><li class="xr-section-item"><input id="section-cc796141-0cb8-4821-bb6b-a5f785657134" class="xr-section-summary-in" type="checkbox"><label for="section-cc796141-0cb8-4821-bb6b-a5f785657134" class="xr-section-summary">Indexes: <span>(3)</span></label><div class="xr-section-inline-details"></div><div class="xr-section-details"><ul class="xr-var-list"><li class="xr-var-item"><div class="xr-index-name"><div>lat</div></div><div class="xr-index-preview">PandasIndex</div><div></div><input id="index-deb55384-ff91-4298-8be1-e0609c57e7c5" class="xr-index-data-in" type="checkbox"><label for="index-deb55384-ff91-4298-8be1-e0609c57e7c5" title="Show/Hide index repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-index-data"><pre>PandasIndex(Index([34.361285842773434,  34.32867018066406,  34.29605451855468,
+        34.26343885644531,  34.23082319433593,  34.19820753222656,
+        34.16559187011718,  34.13297620800781,  34.10036054589843,
+        34.06774488378906,
+       ...
+        25.19628479003906, 25.163669127929687,  25.13105346582031,
+       25.098437803710937,  25.06582214160156, 25.033206479492186,
+        25.00059081738281, 24.967975155273436,  24.93535949316406,
+       24.902743831054686],
+      dtype='float64', name='lat', length=291))</pre></div></li><li class="xr-var-item"><div class="xr-index-name"><div>lon</div></div><div class="xr-index-preview">PandasIndex</div><div></div><input id="index-2acaa2b6-62f5-434b-9dc1-6a6592d39ce8" class="xr-index-data-in" type="checkbox"><label for="index-2acaa2b6-62f5-434b-9dc1-6a6592d39ce8" title="Show/Hide index repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-index-data"><pre>PandasIndex(Index([ 68.1535148310547, 68.18613049316407, 68.21874615527344,
+       68.25136181738281,  68.2839774794922, 68.31659314160157,
+       68.34920880371094, 68.38182446582032,  68.4144401279297,
+       68.44705579003907,
+       ...
+       84.52657720996093, 84.55919287207031, 84.59180853417969,
+       84.62442419628906, 84.65703985839843, 84.68965552050781,
+       84.72227118261719, 84.75488684472657, 84.78750250683593,
+       84.82011816894531],
+      dtype='float64', name='lon', length=512))</pre></div></li><li class="xr-var-item"><div class="xr-index-name"><div>time</div></div><div class="xr-index-preview">PandasIndex</div><div></div><input id="index-7ecc1edb-9242-462e-afb5-9339c04f20a9" class="xr-index-data-in" type="checkbox"><label for="index-7ecc1edb-9242-462e-afb5-9339c04f20a9" title="Show/Hide index repr"><svg class="icon xr-icon-database"><use href="#icon-database"></use></svg></label><div class="xr-index-data"><pre>PandasIndex(DatetimeIndex(['2019-01-03 12:00:00', '2019-01-08 12:00:00',
+               '2019-01-13 12:00:00', '2019-01-18 12:00:00',
+               '2019-01-23 12:00:00', '2019-01-28 12:00:00',
+               '2019-02-02 12:00:00', '2019-02-07 12:00:00',
+               '2019-02-12 12:00:00', '2019-02-17 12:00:00',
+               ...
+               '2023-11-18 12:00:00', '2023-11-23 12:00:00',
+               '2023-11-28 12:00:00', '2023-12-03 12:00:00',
+               '2023-12-08 12:00:00', '2023-12-13 12:00:00',
+               '2023-12-18 12:00:00', '2023-12-23 12:00:00',
+               '2023-12-28 12:00:00', '2024-01-02 12:00:00'],
+              dtype='datetime64[ns]', name='time', length=366, freq=None))</pre></div></li></ul></div></li><li class="xr-section-item"><input id="section-b00d61b2-66f1-4dac-8881-841953f50682" class="xr-section-summary-in" type="checkbox"><label for="section-b00d61b2-66f1-4dac-8881-841953f50682" class="xr-section-summary">Attributes: <span>(12)</span></label><div class="xr-section-inline-details"></div><div class="xr-section-details"><dl class="xr-attrs"><dt><span>Conventions :</span></dt><dd>CF-1.7</dd><dt><span>title :</span></dt><dd>S5PL2 Data Cube Subset</dd><dt><span>history :</span></dt><dd>[{'program': 'xcube_sh.chunkstore.SentinelHubChunkStore', 'cube_config': {'dataset_name': 'S5PL2', 'band_names': ['NO2', 'SO2', 'O3', 'CO', 'CH4', 'HCHO', 'AER_AI_340_380', 'AER_AI_354_388', 'CLOUD_FRACTION'], 'band_fill_values': None, 'band_sample_types': None, 'band_units': None, 'tile_size': [512, 291], 'bbox': [68.137207, 24.886436, 84.836426, 34.37759367382812], 'spatial_res': 0.032615662109375, 'crs': 'WGS84', 'upsampling': 'BILINEAR', 'downsampling': 'NEAREST', 'mosaicking_order': 'mostRecent', 'time_range': ['2019-01-01T00:00:00+00:00', '2023-12-31T00:00:00+00:00'], 'time_period': '5 days 00:00:00', 'time_tolerance': None, 'collection_id': None, 'four_d': False}}]</dd><dt><span>date_created :</span></dt><dd>2024-05-02T13:00:01.155492</dd><dt><span>time_coverage_start :</span></dt><dd>2019-01-01T00:00:00+00:00</dd><dt><span>time_coverage_end :</span></dt><dd>2024-01-05T00:00:00+00:00</dd><dt><span>time_coverage_duration :</span></dt><dd>P1830DT0H0M0S</dd><dt><span>time_coverage_resolution :</span></dt><dd>P5DT0H0M0S</dd><dt><span>geospatial_lon_min :</span></dt><dd>68.137207</dd><dt><span>geospatial_lat_min :</span></dt><dd>24.886436</dd><dt><span>geospatial_lon_max :</span></dt><dd>84.836426</dd><dt><span>geospatial_lat_max :</span></dt><dd>34.37759367382812</dd></dl></div></li></ul></div></div>
+</div>
+<a class="quarto-notebook-link" id="nblink-1" href="submission-preview.html#cell-6">Source: Article Notebook</a></div>
+<section id="predictor-variables-features" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="predictor-variables-features"><span class="header-section-number">2.1</span> Predictor variables (features)</h2>
+<p>The following predictor variables were chose for training the ConvLSTM.</p>
+<section id="methane-ch4" class="level3" data-number="2.1.1">
+<h3 data-number="2.1.1" class="anchored" data-anchor-id="methane-ch4"><span class="header-section-number">2.1.1</span> Methane – CH4</h3>
+<div id="cell-fig-CH4" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-display" data-execution_count="3">
+<div id="fig-ch4" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A map showing the concentration of methane in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-ch4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="submission_files/figure-html/fig-ch4-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;1: Methane (CH4) concentration in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019."><img src="submission_files/figure-html/fig-ch4-output-1.png" class="img-fluid figure-img" alt="A map showing the concentration of methane in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019."></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ch4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Methane (CH4) concentration in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="ozone-o3" class="level3" data-number="2.1.2">
+<h3 data-number="2.1.2" class="anchored" data-anchor-id="ozone-o3"><span class="header-section-number">2.1.2</span> Ozone – O3</h3>
+<div id="cell-fig-O3" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display" data-execution_count="4">
+<div id="fig-o3" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A map showing the concentration of ozone in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-o3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="submission_files/figure-html/fig-o3-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;2: Ozone (O3) concentration in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019."><img src="submission_files/figure-html/fig-o3-output-1.png" class="img-fluid figure-img" alt="A map showing the concentration of ozone in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019."></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-o3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Ozone (O3) concentration in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="sulphur-dioxide-so2" class="level3" data-number="2.1.3">
+<h3 data-number="2.1.3" class="anchored" data-anchor-id="sulphur-dioxide-so2"><span class="header-section-number">2.1.3</span> Sulphur Dioxide – SO2</h3>
+<div id="cell-fig-SO2" class="cell" data-execution_count="5">
+<div class="cell-output cell-output-display" data-execution_count="5">
+<div id="fig-so2" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A map showing the concentration of sulphur dioxide in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-so2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="submission_files/figure-html/fig-so2-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;3: Sulphur Dioxide (SO2) concentration in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019."><img src="submission_files/figure-html/fig-so2-output-1.png" class="img-fluid figure-img" alt="A map showing the concentration of sulphur dioxide in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019."></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-so2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Sulphur Dioxide (SO2) concentration in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="carbon-monoxide-co" class="level3" data-number="2.1.4">
+<h3 data-number="2.1.4" class="anchored" data-anchor-id="carbon-monoxide-co"><span class="header-section-number">2.1.4</span> Carbon Monoxide – CO</h3>
+<div id="cell-fig-CO" class="cell" data-execution_count="6">
+<div class="cell-output cell-output-display" data-execution_count="6">
+<div id="fig-co" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A map showing the concentration of carbon monoxide in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-co-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="submission_files/figure-html/fig-co-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Figure&nbsp;4: Carbon Monoxide (CO) concentration in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019."><img src="submission_files/figure-html/fig-co-output-1.png" class="img-fluid figure-img" alt="A map showing the concentration of carbon monoxide in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019."></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-co-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Carbon Monoxide (CO) concentration in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="nitrogen-dioxide-no2" class="level3" data-number="2.1.5">
+<h3 data-number="2.1.5" class="anchored" data-anchor-id="nitrogen-dioxide-no2"><span class="header-section-number">2.1.5</span> Nitrogen Dioxide – NO2</h3>
+<div id="cell-fig-NO2" class="cell" data-execution_count="7">
+<div class="cell-output cell-output-display" data-execution_count="7">
+<div id="fig-no2" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A map showing the concentration of nitrogen dioxide in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-no2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="submission_files/figure-html/fig-no2-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Figure&nbsp;5: Nitrogen Dioxide (NO2) concentration in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019."><img src="submission_files/figure-html/fig-no2-output-1.png" class="img-fluid figure-img" alt="A map showing the concentration of nitrogen dioxide in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019."></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-no2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: Nitrogen Dioxide (NO2) concentration in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="formaldehyde-hcho" class="level3" data-number="2.1.6">
+<h3 data-number="2.1.6" class="anchored" data-anchor-id="formaldehyde-hcho"><span class="header-section-number">2.1.6</span> Formaldehyde – HCHO</h3>
+<div id="cell-fig-HCHO" class="cell" data-execution_count="8">
+<div class="cell-output cell-output-display" data-execution_count="8">
+<div id="fig-hcho" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A map showing the concentration of formaldehyde in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-hcho-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="submission_files/figure-html/fig-hcho-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Figure&nbsp;6: Formaldehyde (HCHO) concentration in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019."><img src="submission_files/figure-html/fig-hcho-output-1.png" class="img-fluid figure-img" alt="A map showing the concentration of formaldehyde in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019."></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-hcho-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: Formaldehyde (HCHO) concentration in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="target-variable" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="target-variable"><span class="header-section-number">2.2</span> Target variable</h2>
+<section id="aerosol-index-ai-340-380-nm" class="level3" data-number="2.2.1">
+<h3 data-number="2.2.1" class="anchored" data-anchor-id="aerosol-index-ai-340-380-nm"><span class="header-section-number">2.2.1</span> Aerosol Index – AI (340-380 nm)</h3>
+<div id="cell-fig-aeraimap" class="cell" data-execution_count="9">
+<div class="cell-output cell-output-display" data-execution_count="9">
+<div id="fig-aeraimap" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A map showing the concentration of aerosol index in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-aeraimap-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="submission_files/figure-html/fig-aeraimap-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;7: Aerosol Index (AI) concentration in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019."><img src="submission_files/figure-html/fig-aeraimap-output-1.png" class="img-fluid figure-img" alt="A map showing the concentration of aerosol index in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019."></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-aeraimap-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7: Aerosol Index (AI) concentration in the atmosphere as measured by the Sentinel-5P satellite for 13.01.2019.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The Aerosol Index shows large variability through the year and across years.</p>
+<div id="cell-fig-ai" class="cell" data-execution_count="10">
+<div class="cell-output cell-output-display" data-execution_count="10">
+<div id="fig-ai" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A map showing the concentration of aerosol index in the atmosphere as measured by the Sentinel-5P satellite for lat=31.5204, lon=74.3587.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-ai-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="submission_files/figure-html/fig-ai-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8" title="Figure&nbsp;8: Aerosol Index (AI) concentration in the atmosphere as measured by the Sentinel-5P satellite for lat=31.5204, lon=74.3587."><img src="submission_files/figure-html/fig-ai-output-1.png" class="img-fluid figure-img" alt="A map showing the concentration of aerosol index in the atmosphere as measured by the Sentinel-5P satellite for lat=31.5204, lon=74.3587."></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ai-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;8: Aerosol Index (AI) concentration in the atmosphere as measured by the Sentinel-5P satellite for lat=31.5204, lon=74.3587.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="model-training" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Model Training</h1>
+<p>A Convolutional Long Short-Term Memory (ConvLSTM) model is a specialized neural network architecture that integrates the strengths of Convolutional Neural Networks (CNNs) and Long Short-Term Memory networks (LSTMs) (<span class="citation" data-cites="luo2017remembering">Luo, Liu, and Gao (<a href="#ref-luo2017remembering" role="doc-biblioref">2017</a>)</span>). This hybrid model is particularly well-suited for tasks involving spatiotemporal data, where both spatial and temporal dependencies are critical. The primary advantage of ConvLSTM models lies in their ability to simultaneously process and analyze spatial and temporal information, making them more effective for spatiotemporal tasks compared to using separate CNN and LSTM models. ConvLSTM models are used extensively in fields such as video processing, weather forecasting, and environmental monitoring, where data exhibits strong correlations across both space and time.</p>
+<div id="cell-fig-convlst" class="cell" data-execution_count="12">
+<div class="cell-output cell-output-display" data-execution_count="12">
+<div id="fig-convlst" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Convolutional LSTMs.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-convlst-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="submission_files/figure-html/fig-convlst-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="Figure&nbsp;9: Convolutional LSTMs combine both spatial and temporal information in the neural network (@luo2017remembering)."><img src="submission_files/figure-html/fig-convlst-output-1.png" class="img-fluid figure-img" alt="Convolutional LSTMs."></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-convlst-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;9: Convolutional LSTMs combine both spatial and temporal information in the neural network (<span class="citation" data-cites="luo2017remembering">Luo, Liu, and Gao (<a href="#ref-luo2017remembering" role="doc-biblioref">2017</a>)</span>).
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The idea is to use the <a href="#predictor-variables-features">predictor variables</a> as input to the ConvLSTM and to get the <a href="#target-variable">taget variable</a> as an output.The model was trained at 50 and 100 epochs. The model was trained using the Adam optimizer with a learning rate of 0.001 and a batch size of 32.</p>
+<p>I used the numpy (<span class="citation" data-cites="harris2020array">Harris et al. (<a href="#ref-harris2020array" role="doc-biblioref">2020</a>)</span>) python package for all the data preprocssing steps and then I used Tensorflow (<span class="citation" data-cites="Martinabadi:2015">Martin (<a href="#ref-Martinabadi:2015" role="doc-biblioref">2015</a>)</span>) and Keras (<span class="citation" data-cites="chollet2015keras">Chollet et al. (<a href="#ref-chollet2015keras" role="doc-biblioref">2015</a>)</span>) python packages for building a custom ConvLSTM. I used matplotlib (<span class="citation" data-cites="Hunter:2007">Hunter (<a href="#ref-Hunter:2007" role="doc-biblioref">2007</a>)</span>) for all plotting tasks.</p>
+<p>As model training required a lot of memory, the DeepESDL Jupyter Lab proved to be insufficient. Hence, I had to train the model at the Model Server Grid (MSG) Windows cluster at the Helmholtz - Center for Environmental Research (UFZ) in Leipzig, Germany Even then, the model arichtecture had to be simplified to reduce the memory requirements. The model architecture is as follows:</p>
+<div id="cell-fig-model" class="cell" data-execution_count="13">
+<div class="cell-output cell-output-display" data-execution_count="13">
+<div id="fig-model" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Smogseer.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-model-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="submission_files/figure-html/fig-model-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10" title="Figure&nbsp;10: The model architecture for the custom ConvLSTM model titled “Smogseer”."><img src="submission_files/figure-html/fig-model-output-1.png" class="img-fluid figure-img" alt="Smogseer."></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-model-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;10: The model architecture for the custom ConvLSTM model titled “Smogseer”.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The training took approximately 4 hours for 50 epochs and 10 hours for 100 epochs.</p>
+<p>The feature training (X_train) dataset dimesion were: (292, 1, 291, 512, 6). Here is the breakdown.</p>
+<pre><code>292: dates
+1: time step
+291: latitudes
+512: longitudes
+6: Features ['SO2', 'NO2', 'CH4', 'O3', 'CO', 'HCHO']</code></pre>
+<p>The feature testing (<a href="data/X_val.npy">X_val</a>) dataset dimesion were: (74, 1, 291, 512, 6). Here is the breakdown.</p>
+<pre><code>74: dates
+1: time step
+291: latitudes
+512: longitudes
+6: Features ['SO2', 'NO2', 'CH4', 'O3', 'CO', 'HCHO']</code></pre>
+<p>The target training (y_train) dataset dimension was: (292, 1, 291, 512, 1). Here is the breakdown.</p>
+<pre><code>292: dates
+1: time step
+291: latitudes
+512: longitudes
+1: Target ['AI']</code></pre>
+<p>The target testing (<a href="data/Y_val.npy">y_val</a>) dataset dimension was: (74, 1, 291, 512, 1). Here is the breakdown.</p>
+<pre><code>74: dates
+1: time step
+291: latitudes
+512: longitudes
+1: Target ['AI']</code></pre>
+<section id="model-workflow" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="model-workflow"><span class="header-section-number">3.1</span> Model Workflow</h2>
+<p>Here is a workflow for the provided code in <a href="src/smogseer.py">smogseer.py</a>:</p>
+<blockquote class="blockquote">
+<p>A run of the code can be found in <a href="./notebooks/smogseer50-preview.html">smogseer50.py</a> and <a href="./notebooks/smogseer100-preview.html">smogseer100.py</a>.</p>
+</blockquote>
+<ul>
+<li><strong>Import Libraries</strong>:
+<ul>
+<li>Import necessary libraries such as <code>xarray</code>, <code>numpy</code>, <code>tensorflow</code>, <code>sklearn</code>, and <code>matplotlib</code>.</li>
+</ul></li>
+<li><strong>Load Dataset</strong>:
+<ul>
+<li>Load the dataset using <code>xarray.open_dataset()</code>.</li>
+</ul></li>
+<li><strong>Stack Features</strong>:
+<ul>
+<li>Stack the features into a single <code>DataArray</code> and transpose to desired dimensions.</li>
+</ul></li>
+<li><strong>Convert to NumPy Arrays</strong>:
+<ul>
+<li>Convert the <code>DataArray</code> to a NumPy array.</li>
+</ul></li>
+<li><strong>Normalize Input Data</strong>:
+<ul>
+<li>Normalize the input data using <code>StandardScaler</code>.</li>
+</ul></li>
+<li><strong>Impute Missing Values in Input Data</strong>:
+<ul>
+<li>Reshape the data for imputation.</li>
+<li>Impute missing values using <code>SimpleImputer</code>.</li>
+<li>Reshape the data back to original dimensions.</li>
+</ul></li>
+<li><strong>Add Time Dimension to Input Data</strong>:
+<ul>
+<li>Add an additional time dimension to the input data.</li>
+</ul></li>
+<li><strong>Load Target Data</strong>:
+<ul>
+<li>Load the target dataset using <code>xarray.open_dataset()</code>.</li>
+</ul></li>
+<li><strong>Normalize Target Data</strong>:
+<ul>
+<li>Normalize the target data using <code>MinMaxScaler</code>.</li>
+</ul></li>
+<li><strong>Impute Missing Values in Target Data</strong>:
+<ul>
+<li>Reshape the target data for imputation.</li>
+<li>Impute missing values using <code>SimpleImputer</code>.</li>
+<li>Reshape the target data back to original dimensions.</li>
+</ul></li>
+<li><strong>Ensure Target Data Shape</strong>:
+<ul>
+<li>Ensure the target data shape is <code>(num_samples, num_timesteps, num_latitudes, num_longitudes, 1)</code>.</li>
+</ul></li>
+<li><strong>Remove Samples with NaN Values</strong>:
+<ul>
+<li>Identify and remove samples with NaN values in the target data.</li>
+</ul></li>
+<li><strong>Verify Target Data Range</strong>:
+<ul>
+<li>Ensure the target data values are within the valid range <code>[0, 1]</code>.</li>
+</ul></li>
+<li><strong>Split Data into Training and Validation Sets</strong>:
+<ul>
+<li>Split the cleaned data into training and validation sets based on a defined ratio.</li>
+</ul></li>
+<li><strong>Define Model Architecture</strong>:
+<ul>
+<li>Define the model architecture using <code>ConvLSTM2D</code> and <code>Conv3D</code> layers with appropriate activation functions and initializers.</li>
+<li>Add batch normalization layers between LSTM layers.</li>
+</ul></li>
+<li><strong>Compile Model</strong>:
+<ul>
+<li>Compile the model with <code>Adam</code> optimizer, <code>binary_crossentropy</code> loss, and <code>mean_square_error</code> as a metric.</li>
+</ul></li>
+<li><strong>Print Model Summary</strong>:
+<ul>
+<li>Print the summary of the defined model.</li>
+</ul></li>
+<li><strong>Define Data Generator Class</strong>:
+<ul>
+<li>Define a <code>DataGenerator</code> class to handle large datasets efficiently.</li>
+</ul></li>
+<li><strong>Initialize Data Generators</strong>:
+<ul>
+<li>Initialize training and validation data generators with a specified batch size.</li>
+</ul></li>
+<li><strong>Define Callbacks for Training</strong>:
+<ul>
+<li>Define callbacks for reducing learning rate, early stopping, and TensorBoard logging.</li>
+</ul></li>
+<li><strong>Train the Model</strong>:
+<ul>
+<li>Train the model using the data generators and defined callbacks.</li>
+</ul></li>
+<li><strong>Save the Model</strong>:
+<ul>
+<li>Save the trained model to a keras file .</li>
+</ul></li>
+<li><strong>Load the Model</strong>:
+<ul>
+<li>Load the saved model for further evaluation and prediction.</li>
+</ul></li>
+<li><strong>Run Predictions on Validation Data</strong>:
+<ul>
+<li>Run predictions on the validation data using the loaded model.</li>
+</ul></li>
+<li><strong>Evaluate the Model</strong>:
+<ul>
+<li>Evaluate the model on the validation data to obtain loss and accuracy.</li>
+</ul></li>
+<li><strong>Binary Classification Threshold</strong>:
+<ul>
+<li>Apply a threshold to convert predictions to binary values for classification.</li>
+</ul></li>
+<li><strong>Flatten Predictions and Ground Truth</strong>:
+<ul>
+<li>Flatten the predictions and ground truth data for comparison.</li>
+</ul></li>
+<li><strong>Plot Comparisons and Training History</strong>:
+<ul>
+<li>Define functions to plot comparisons between ground truth and predictions.</li>
+<li>Visualize a few samples by plotting comparisons.</li>
+<li>Define a function to plot training and validation loss and accuracy over epochs.</li>
+<li>Plot and save the training history.</li>
+</ul></li>
+</ul>
+<p>To load the 50 epoch model and run predictions on the validation data, you can use the following code:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">## LOAD CHECKPOINTS IF NEEDED</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>X_val <span class="op">=</span> np.load(<span class="st">'data/X_val.npy'</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>y_val <span class="op">=</span> np.load(<span class="st">'data/Y_val.npy'</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the model</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> load_model(<span class="st">'smogseer50.keras'</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Run predictions on validation data</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>predictions <span class="op">=</span> model.predict(X_val)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluate the model on validation data</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>val_loss, val_accuracy <span class="op">=</span> model.evaluate(X_val, y_val)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Validation Loss: </span><span class="sc">{</span>val_loss<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Validation Accuracy: </span><span class="sc">{</span>val_accuracy<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-33" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-stdout">
+<pre><code>3/3 ━━━━━━━━━━━━━━━━━━━━ 7s 693ms/step
+3/3 ━━━━━━━━━━━━━━━━━━━━ 3s 432ms/step - loss: 0.3992 - mean_squared_error: 0.0016
+Validation Loss: 0.39958614110946655
+Validation Accuracy: 0.0018263210076838732</code></pre>
+</div>
+</div>
+<p>To load the 100 epoch model and run predictions on the validation data, you can use the following code:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">## LOAD CHECKPOINTS IF NEEDED</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>X_val <span class="op">=</span> np.load(<span class="st">'data/X_val.npy'</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>y_val <span class="op">=</span> np.load(<span class="st">'data/Y_val.npy'</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the model</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> load_model(<span class="st">'smogseer100.keras'</span>)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Run predictions on validation data</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>predictions <span class="op">=</span> model.predict(X_val)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluate the model on validation data</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>val_loss, val_accuracy <span class="op">=</span> model.evaluate(X_val, y_val)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Validation Loss: </span><span class="sc">{</span>val_loss<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Validation Accuracy: </span><span class="sc">{</span>val_accuracy<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-35" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-stdout">
+<pre><code>3/3 ━━━━━━━━━━━━━━━━━━━━ 3s 632ms/step
+3/3 ━━━━━━━━━━━━━━━━━━━━ 3s 423ms/step - loss: 0.4003 - mean_squared_error: 0.0019
+Validation Loss: 0.40102294087409973
+Validation Accuracy: 0.0022550118155777454</code></pre>
+</div>
+</div>
+<p>The images were converted to a GIF. The ground truth for the same time period was also visualised. The GIFs can be see side by side here:</p>
+<div id="cell-comparison" class="cell" data-execution_count="22">
+<div class="cell-output cell-output-display" data-execution_count="22">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="submission_files/figure-html/comparison-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11" title="Comparison model predictions and ground truth for the validation data."><img src="submission_files/figure-html/comparison-output-1.png" class="img-fluid figure-img" alt="comparison plot."></a></p>
+<figcaption>Comparison model predictions and ground truth for the validation data.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The model prediction and gorund truth data were visualised side by side for 5 timesteps, which is 25 days. These images can be found in the <code>static</code> folder in the repository.</p>
+<p>An example:</p>
+<div id="cell-fig-gif" class="cell" data-execution_count="21">
+<div id="fig-gif" class="cell-output cell-output-display quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="21">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-gif-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<pre id="fig-gif" class="cell-output cell-output-display" data-execution_count="21"><code>&lt;IPython.core.display.Image object&gt;</code></pre>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-gif-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;11: Animated predictions for 25 days from 01.01.2023 to 31.01.2023.
+</figcaption>
+</figure>
+</div>
+</div>
+</section>
+</section>
+<section id="evaluation" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Evaluation</h1>
+<p>The evaluation metrics used in Smogseer are: 1. Binary Crossentropy Loss, 2. Mean Squared Error.</p>
+<p>Here is what the evaluation metrics look like for the 50 epochs model:</p>
+<div id="cell-fig-smogseer50" class="cell" data-execution_count="16">
+<div class="cell-output cell-output-display" data-execution_count="16">
+<div id="fig-smogseer50" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Smogseer50">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-smogseer50-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="submission_files/figure-html/fig-smogseer50-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-12" title="Figure&nbsp;12: Evaluation of the Smogseer model on the validation dataset with an epoch of 50."><img src="submission_files/figure-html/fig-smogseer50-output-1.png" class="img-fluid figure-img" alt="Smogseer50"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-smogseer50-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;12: Evaluation of the Smogseer model on the validation dataset with an epoch of 50.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>And here is what the evaluation metrics look like for the 100 epochs model:</p>
+<div id="cell-fig-smogseer100" class="cell" data-execution_count="17">
+<div class="cell-output cell-output-display" data-execution_count="17">
+<div id="fig-smogseer100" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Smogseer100">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-smogseer100-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="submission_files/figure-html/fig-smogseer100-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-13" title="Figure&nbsp;13: Evaluation of the Smogseer model on the validation dataset with an epoch of 100."><img src="submission_files/figure-html/fig-smogseer100-output-1.png" class="img-fluid figure-img" alt="Smogseer100"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-smogseer100-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;13: Evaluation of the Smogseer model on the validation dataset with an epoch of 100.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="conclusion" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Conclusion</h1>
+<section id="loss-over-epochs" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="loss-over-epochs"><span class="header-section-number">5.1</span> Loss over Epochs</h2>
+<p><strong>Training Loss (Blue Line):</strong></p>
+<ul>
+<li>The training loss starts at around 0.70 and decreases steadily as the number of epochs increases.</li>
+<li>It shows a continuous decline, indicating that the model is learning from the training data and improving its performance.</li>
+</ul>
+<p><strong>Validation Loss (Orange Line):</strong></p>
+<ul>
+<li>The validation loss starts slightly higher than the training loss, which is typical.</li>
+<li>It follows a similar declining trend as the training loss.</li>
+<li>The validation loss closely tracks the training loss, which suggests that the model is generalizing well to the validation data without overfitting.</li>
+</ul>
+</section>
+<section id="mse-over-epochs" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="mse-over-epochs"><span class="header-section-number">5.2</span> MSE over Epochs</h2>
+<p><strong>Training MSE (Blue Line):</strong></p>
+<ul>
+<li>The training MSE starts at a high value and decreases steadily, similar to the training loss.</li>
+<li>This decrease indicates that the model’s predictions are becoming closer to the actual target values as training progresses.</li>
+</ul>
+<p><strong>Validation MSE (Orange Line):</strong></p>
+<ul>
+<li>The validation MSE also starts high and decreases over the epochs.</li>
+<li>It tracks the training MSE closely, reinforcing that the model’s performance on unseen data is improving without significant overfitting.</li>
+</ul>
+</section>
+<section id="key-observations" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="key-observations"><span class="header-section-number">5.3</span> Key Observations</h2>
+<ul>
+<li>Steady Decrease: Both the loss and MSE for training and validation datasets are steadily decreasing, which is a positive sign that the model is learning effectively.</li>
+<li>No Overfitting: Since the validation loss and MSE closely follow the training loss and MSE without diverging, it indicates that there is no significant overfitting.</li>
+<li>Plateauing: Both training and validation loss/MSE curves start to plateau after about 30 epochs. This suggests that further training may not significantly improve the model’s performance.</li>
+</ul>
+</section>
+<section id="recommendations" class="level2" data-number="5.4">
+<h2 data-number="5.4" class="anchored" data-anchor-id="recommendations"><span class="header-section-number">5.4</span> Recommendations</h2>
+<ul>
+<li>Early Stopping: Implement early stopping in future training runs to stop training when the validation loss stops improving, saving computational resources and potentially preventing overfitting.</li>
+<li>Learning Rate: If you observe the model’s performance plateauing, consider decreasing the learning rate to allow for finer adjustments to the weights.</li>
+<li>Model architecture: Experiment with different model architectures, hyperparameters, or additional features to improve the model’s predictive performance.</li>
+</ul>
+</section>
+</section>
+<section id="references" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-Brandt:2023" class="csl-entry" role="listitem">
+Brandt, Alicja AND Fomferra, Gunnar AND Balfanz. 2023. <span>“DeepESDL-an Open Platform for Research and Collaboration in Earth Sciences.”</span> In <em>EGU General Assembly Conference Abstracts</em>, EGU–15225.
+</div>
+<div id="ref-chollet2015keras" class="csl-entry" role="listitem">
+Chollet, François et al. 2015. <span>“Keras.”</span> <a href="https://keras.io" class="uri">https://keras.io</a>.
+</div>
+<div id="ref-Sentinel" class="csl-entry" role="listitem">
+ESA. 2021. <span>“Copernicus Sentinel-5P (Processed by ESA), TROPOMI Level 2 Nitrogen Dioxide Total Column Products.”</span> <a href="https://doi.org/10.5270/S5P-9bnp8q8">https://doi.org/10.5270/S5P-9bnp8q8</a>.
+</div>
+<div id="ref-harris2020array" class="csl-entry" role="listitem">
+Harris, Charles R., K. Jarrod Millman, Stéfan J. van der Walt, Ralf Gommers, Pauli Virtanen, David Cournapeau, Eric Wieser, et al. 2020. <span>“Array Programming with <span>NumPy</span>.”</span> <em>Nature</em> 585 (7825): 357–62. <a href="https://doi.org/10.1038/s41586-020-2649-2">https://doi.org/10.1038/s41586-020-2649-2</a>.
+</div>
+<div id="ref-Hunter:2007" class="csl-entry" role="listitem">
+Hunter, J. D. 2007. <span>“Matplotlib: A 2D Graphics Environment.”</span> <em>Computing in Science &amp; Engineering</em> 9 (3): 90–95. <a href="https://doi.org/10.1109/MCSE.2007.55">https://doi.org/10.1109/MCSE.2007.55</a>.
+</div>
+<div id="ref-khan2024smogseer" class="csl-entry" role="listitem">
+Khan, Taimur. 2024. <span>“Smogseer: A Convolutional LSTM for Forecasting Air Quality Metrics from Sentinel-5P Data.”</span> <a href="https://doi.org/10.5281/zenodo.13118498" class="uri">https://doi.org/10.5281/zenodo.13118498</a>.
+</div>
+<div id="ref-kumar2020convcast" class="csl-entry" role="listitem">
+Kumar, Ashutosh, Tanvir Islam, Yoshihide Sekimoto, Chris Mattmann, and Brian Wilson. 2020. <span>“Convcast: An Embedded Convolutional LSTM Based Architecture for Precipitation Nowcasting Using Satellite Data.”</span> <em>Plos One</em> 15 (3): e0230114.
+</div>
+<div id="ref-luo2017remembering" class="csl-entry" role="listitem">
+Luo, Weixin, Wen Liu, and Shenghua Gao. 2017. <span>“Remembering History with Convolutional Lstm for Anomaly Detection.”</span> In <em>2017 IEEE International Conference on Multimedia and Expo (ICME)</em>, 439–44. IEEE.
+</div>
+<div id="ref-majeed2024solving" class="csl-entry" role="listitem">
+Majeed, Rabia, Muhammad Shehzaib Anjum, Muhammad Imad-ud-din, Suhaib Malik, Muhammad Naveed Anwar, Bilal Anwar, and Muhammad Fahim Khokhar. 2024. <span>“Solving the Mysteries of Lahore Smog: The Fifth Season in the Country.”</span> <em>Frontiers in Sustainable Cities</em> 5: 1314426.
+</div>
+<div id="ref-Martinabadi:2015" class="csl-entry" role="listitem">
+Martin, abadi AND Ashish agarwal AND Paul barham AND Eugene brevdo AND Zhifeng chen AND Craig citro AND Greg s. corrado AND Andy davis AND Jeffrey dean AND Matthieu devin AND Sanjay ghemawat AND Ian goodfellow AND Andrew harp AND Geoffrey irving AND Michael isard AND Yangqing Jia AND Rafal jozefowicz AND Lukasz kaiser AND Manjunath kudlur AND Josh levenberg AND Dandelion mané AND Rajat monga AND Sherry moore AND Derek murray AND Chris olah AND Mike schuster AND Jonathon shlens AND Benoit steiner AND Ilya sutskever AND Kunal talwar AND Paul tucker AND Vincent vanhoucke AND Vijay vasudevan AND Fernanda viégas AND Oriol vinyals AND Pete warden AND Martin wattenberg AND Martin wicke AND Yuan yu AND Xiaoqiang zheng. 2015. <span>“<span>TensorFlow</span>: Large-Scale Machine Learning on Heterogeneous Systems.”</span> <a href="https://www.tensorflow.org/">https://www.tensorflow.org/</a>.
+</div>
+<div id="ref-shi2015convolutional" class="csl-entry" role="listitem">
+Shi, Xingjian, Zhourong Chen, Hao Wang, Dit-Yan Yeung, Wai-Kin Wong, and Wang-chun Woo. 2015. <span>“Convolutional LSTM Network: A Machine Learning Approach for Precipitation Nowcasting.”</span> <em>Advances in Neural Information Processing Systems</em> 28.
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"descPosition":"bottom","loop":false,"selector":".lightbox","closeEffect":"zoom","openEffect":"zoom"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>
