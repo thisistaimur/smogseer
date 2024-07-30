@@ -4,7 +4,7 @@
   <img src="static/comparison.gif" alt="Comparison" />
 </div>
 
->Model workflow source code is avaiable in a private repository and can be shared upon request @ [tq89iwow@studserv.uni-leipzig.de](mailto:tq89iwow@studserv.uni-leipzig.de?subject=smogseer query)
+>Model workflow source code is avaiable in a private repository and can be shared upon request @ [tq89iwow@studserv.uni-leipzig.de](mailto:tq89iwow@studserv.uni-leipzig.de)
 
 ## Overview
 
