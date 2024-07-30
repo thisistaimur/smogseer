@@ -1,4 +1,4 @@
-# Smogseer: A Convolutional LSTM model for forecasting air quality from Sentinel-5P data
+# Smogseer: A Convolutional LSTM implementation for forecasting air quality from Sentinel-5P data
 
 <div align="center">
   <img src="static/comparison.gif" alt="Comparison" />
